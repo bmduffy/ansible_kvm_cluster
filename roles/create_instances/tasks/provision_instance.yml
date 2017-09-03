@@ -3,12 +3,12 @@
 - name: "Get boot disk path ..."
   set_fact:
     boot_disk : "{{ instance.disks[0].path }}"
-- debug:
-    msg: "boot disk :: {{ boot_disk }}"
+
 - name: "Copy base image disk for '{{ instance.name }}'"
   command: "cp {{ nodes.base_image }} {{ boot_disk }}"
   args:
     creates: "{{ boot_disk }}"
+
 - name: "Prepare '{{ instance.name }}' disk image for install"
   command: |
     virt-sysprep --connect qemu:///system \
@@ -19,6 +19,7 @@
       --timezone {{ nodes.timezone }} \
       --uninstall cloud-init.x86_64 \
       --firstboot {{ host_prep_script }}
+
 - name: "Creating instance '{{ instance.name }}'"
   command: |
     virt-install --connect qemu:///system \
@@ -37,7 +38,8 @@
       --network network={{ nic.network }},model={{ nic.model }},mac={{ nic.mac }} \
       {% endfor %}
       --graphics none
-- name: "Add '{{ instance.name }}' static IPs for NICs"
+
+- name: "Assign instance '{{ instance.name }}' static IPs for NICs via MAC address"
   command: |
     {% for nic in instance.nics %}
     {% if nic.ipv4 is defined %}

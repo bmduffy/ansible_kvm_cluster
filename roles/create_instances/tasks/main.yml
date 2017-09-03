@@ -20,10 +20,6 @@
   set_fact:
     instance_list: "{{ output.stdout_lines }}"
 
-- name: "List of VMs in libvirt"
-  debug:
-    msg: "{{ instance_list }}"
-
 - include: provision_instance.yml
   when: instance not in instance_list
   with_items: "{{ nodes.instances }}"
