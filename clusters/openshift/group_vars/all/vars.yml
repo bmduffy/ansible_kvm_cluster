@@ -1,0 +1,78 @@
+---
+
+image_path: "/home/brian.duffy/libvirt/images"
+
+networks:
+- name: "openshift"
+  mode: "nat"
+  gateway: 10.10.10.1
+  netmask: 255.255.255.0
+  dhcp:
+    range:
+      start: 10.10.10.2
+      end: 10.10.10.254
+
+nodes:
+  root_password: "passw0rd"
+  timezone: "Europe/Dublin"
+  keymap:   "ie"
+  ssh_key:  "/home/brian.duffy/.ssh/id_rsa.pub"
+  base_image: "{{ image_path }}/rhel-server-7.4-x86_64-kvm.qcow2"
+  os_variant: "rhel7"
+  instances:
+    - name: "lb01"
+      cpus: 2
+      memory: 2048
+      nics:
+        - network: "openshift"
+          model: "virtio"
+          mac: "52:54:00:00:00:00"
+          ipv4: "10.10.10.10"
+      disks:
+        - path: "{{ image_path }}/lb01-disk1.qcow2"
+          format: "qcow2"
+        - path: "{{ image_path }}/lb01-disk2.qcow2"
+          format: "qcow2"
+          size: 20
+    - name: "ms01"
+      cpus: 2
+      memory: 2048
+      nics:
+        - network: "openshift"
+          model: "virtio"
+          mac: "52:54:00:00:00:01"
+          ipv4: "10.10.10.11"
+      disks:
+        - path: "{{ image_path }}/ms01-disk1.qcow2"
+          format: "qcow2"
+        - path: "{{ image_path }}/ms01-disk2.qcow2"
+          format: "qcow2"
+          size: 20
+    - name: "mn01"
+      cpus: 1
+      memory: 1024
+      nics:
+        - network: "openshift"
+          model: "virtio"
+          mac: "52:54:00:00:00:02"
+          ipv4: "10.10.10.12"
+      disks:
+        - path: "{{ image_path }}/mn01-disk1.qcow2"
+          format: "qcow2"
+        - path: "{{ image_path }}/mn01-disk2.qcow2"
+          format: "qcow2"
+          size: 20
+    - name: "mn02"
+      cpus: 1
+      memory: 1024
+      nics:
+        - network: "openshift"
+          model: "virtio"
+          mac: "52:54:00:00:00:03"
+          ipv4: "10.10.10.13"
+      disks:
+        - path: "{{ image_path }}/mn02-disk1.qcow2"
+          format: "qcow2"
+        - path: "{{ image_path }}/mn02-disk2.qcow2"
+          format: "qcow2"
+          size: 20

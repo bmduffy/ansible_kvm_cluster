@@ -1,0 +1,18 @@
+---
+
+- name: "Set the network xml source path for '{{ network.name }}'"
+  set_fact:
+    xml_path: "{{ create_networks_tmp_dir }}/{{ network.name }}.xml"
+- name: "Create network template for '{{ network.name }}'"
+  template:
+    src: "net-create.xml.j2"
+    dest: "{{ xml_path }}"
+- name: "Define the network from '{{ xml_path }}' so it is persistent"
+  command: |
+    virsh --connect qemu:///system net-define {{ xml_path }}
+- name: "Start '{{ network.name }}' network so it is activated"
+  command: |
+    virsh --connect qemu:///system net-start {{ network.name }}
+- name: "Set '{{ network.name }}' to autostart"
+  command: |
+    virsh --connect qemu:///system net-autostart {{ network.name }}

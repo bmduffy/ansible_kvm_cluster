@@ -1,0 +1,8 @@
+#!/bin/bash
+
+sed -i -E 's/#?PubkeyAuthentication\s+(yes|no)/PubkeyAuthentication yes/g' /etc/ssh/sshd_config
+sed -i -E 's/#PasswordAuthentication\s+yes/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+sed -i -E 's/^PasswordAuthentication\s+no/#PasswordAuthentication no/g' /etc/ssh/sshd_config
+restorecon -F /root/.ssh /root/.ssh/authorized_keys
+localectl set-x11-keymap {{ nodes.keymap }}
+reboot

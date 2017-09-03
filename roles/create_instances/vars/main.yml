@@ -1,0 +1,4 @@
+---
+
+create_instances_tmp_dir: "/tmp/create_instances"
+host_prep_script: "{{ create_instances_tmp_dir }}/host_prep.sh"

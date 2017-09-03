@@ -1,0 +1,36 @@
+---
+
+- name: "Create temporary directory '{{ create_instances_tmp_dir }}'"
+  file:
+    path: "{{ create_instances_tmp_dir }}"
+    state: directory
+
+- name: "Generate host prep script"
+  template:
+    src: "host_prep.sh.j2"
+    dest: "{{ host_prep_script }}"
+    mode: "0755"
+
+- name: "Check instances from virsh"
+  command: |
+    virsh --connect qemu:///system list --all --name
+  register: output
+
+- name: "Get a list of instances names"
+  set_fact:
+    instance_list: "{{ output.stdout_lines }}"
+
+- name: "List of VMs in libvirt"
+  debug:
+    msg: "{{ instance_list }}"
+
+- include: provision_instance.yml
+  when: instance not in instance_list
+  with_items: "{{ nodes.instances }}"
+  loop_control:
+    loop_var: instance
+
+- name: "Clean up temporary directory '{{ create_instances_tmp_dir }}'"
+  file:
+    path: "{{ create_instances_tmp_dir }}"
+    state: absent

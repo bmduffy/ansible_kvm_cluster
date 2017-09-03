@@ -1,0 +1,26 @@
+---
+
+- name: "Create temporary directory '{{ create_networks_tmp_dir }}'"
+  file:
+    path: "{{ create_networks_tmp_dir }}"
+    state: directory
+
+- name: "Check networks from virsh"
+  command: |
+    virsh --connect qemu:///system net-list --name
+  register: output
+
+- name: "Get a list of networks"
+  set_fact:
+    network_list: "{{ output.stdout_lines }}"
+
+- include: create_network.yml
+  when: network.name not in network_list
+  with_items: "{{ networks }}"
+  loop_control:
+    loop_var: network
+
+- name: "Clean up temporary directory '{{ create_networks_tmp_dir }}'"
+  file:
+    path: "{{ create_networks_tmp_dir }}"
+    state: absent
