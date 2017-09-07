@@ -20,8 +20,11 @@
   set_fact:
     instance_list: "{{ output.stdout_lines }}"
 
+- debug:
+    msg: "{{ instance_list }}"
+
 - include: provision_instance.yml
-  when: instance not in instance_list
+  when: instance.name not in instance_list
   with_items: "{{ nodes.instances }}"
   loop_control:
     loop_var: instance

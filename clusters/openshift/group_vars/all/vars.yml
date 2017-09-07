@@ -2,6 +2,8 @@
 
 image_path: "/home/brian.duffy/libvirt/images"
 
+subdomain: "ocp.cluster.com"
+
 networks:
 - name: "openshift"
   mode: "nat"
@@ -76,3 +78,9 @@ nodes:
         - path: "{{ image_path }}/mn02-disk2.qcow2"
           format: "qcow2"
           size: 20
+
+node_groups:
+  all:     ["lb01", "ms01", "mn01", "mn02"]
+  lbs:     ["lb01"]
+  masters: ["ms01"]
+  nodes:   ["mn01", "mn02"]

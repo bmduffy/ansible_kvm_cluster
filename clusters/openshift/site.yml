@@ -9,3 +9,4 @@
   roles:
     - {role: create_networks}
     - {role: create_instances}
+    - {role: generate_hostfile}
