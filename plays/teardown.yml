@@ -1,0 +1,14 @@
+---
+
+- name: "Tear down cluster"
+  become: no
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: "destroy all VMs"
+      virt:
+        name: "{{ vm.name }}"
+        state: destroyed
+      with_items: "{{ nodes.instances }}"
+      loop_control:
+        loop_var: vm

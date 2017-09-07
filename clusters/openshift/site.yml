@@ -1,12 +1,3 @@
 ---
 
-- name: "Provision local KVM cluster with libvirt"
-  become: no
-  hosts: localhost
-  connection: local
-  tags:
-    - "provision"
-  roles:
-    - {role: create_networks}
-    - {role: create_instances}
-    - {role: generate_hostfile}
+### Add configuration here for your cluster

@@ -1,0 +1,14 @@
+---
+
+- name: "Shutdown cluster"
+  become: no
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: "Shutdown all VMs"
+      virt:
+        name: "{{ vm.name }}"
+        state: shutdown
+      with_items: "{{ nodes.instances }}"
+      loop_control:
+        loop_var: vm
