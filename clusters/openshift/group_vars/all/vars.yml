@@ -22,7 +22,7 @@ nodes:
   base_image: "{{ image_path }}/rhel-server-7.4-x86_64-kvm.qcow2"
   os_variant: "rhel7"
   instances:
-    - name: "lb01"
+    - name: "mgmt"
       cpus: 2
       memory: 2048
       nics:
@@ -33,9 +33,6 @@ nodes:
       disks:
         - path: "{{ image_path }}/lb01-disk1.qcow2"
           format: "qcow2"
-        - path: "{{ image_path }}/lb01-disk2.qcow2"
-          format: "qcow2"
-          size: 20
     - name: "ms01"
       cpus: 2
       memory: 2048
@@ -80,7 +77,7 @@ nodes:
           size: 20
 
 node_groups:
-  all:     ["lb01", "ms01", "mn01", "mn02"]
-  lbs:     ["lb01"]
+  all:     ["mgmt", "ms01", "mn01", "mn02"]
+  mgmt:    ["mgmt"]
   masters: ["ms01"]
   nodes:   ["mn01", "mn02"]

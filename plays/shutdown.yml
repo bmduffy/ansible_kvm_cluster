@@ -12,3 +12,10 @@
       with_items: "{{ nodes.instances }}"
       loop_control:
         loop_var: vm
+    - name: "render all networks inactive"
+      virt_net:
+        state: inactive
+        name: "{{ network.name }}"
+      with_items: "{{ networks }}"
+      loop_control:
+        loop_var: network

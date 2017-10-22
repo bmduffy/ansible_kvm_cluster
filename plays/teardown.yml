@@ -8,7 +8,14 @@
     - name: "destroy all VMs"
       virt:
         name: "{{ vm.name }}"
-        state: destroyed
+        command: undefine
       with_items: "{{ nodes.instances }}"
       loop_control:
         loop_var: vm
+    - name: "ensure all networks are destoryed"
+      virt_net:
+        command: undefine
+        name: "{{ network.name }}"
+      with_items: "{{ networks }}"
+      loop_control:
+        loop_var: network
