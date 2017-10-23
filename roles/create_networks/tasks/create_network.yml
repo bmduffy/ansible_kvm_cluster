@@ -10,13 +10,7 @@
     dest: "{{ xml_path }}"
 
 - name: "Define the network from '{{ xml_path }}' so it is persistent"
-  command: |
-    virsh --connect qemu:///system net-define {{ xml_path }}
-
-- name: "Start '{{ network.name }}' network so it is activated"
-  command: |
-    virsh --connect qemu:///system net-start {{ network.name }}
-
-- name: "Set '{{ network.name }}' to autostart"
-  command: |
-    virsh --connect qemu:///system net-autostart {{ network.name }}
+  virt_net:
+    command: define
+    name: "{{ network.name }}"
+    xml: "{{ xml_path }}"

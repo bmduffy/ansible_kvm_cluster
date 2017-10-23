@@ -20,6 +20,18 @@
   loop_control:
     loop_var: network
 
+- name: "Start '{{ item.name }}' network so it is activated"
+  virt_net:
+    name: "{{ item.name }}"
+    state: active
+  with_items: "{{ networks }}"
+
+- name: "Set '{{ item.name }}' to autostart"
+  virt_net:
+    name: "{{ item.name }}"
+    autostart: yes
+  with_items: "{{ networks }}"
+
 - name: "Clean up temporary directory '{{ create_networks_tmp_dir }}'"
   file:
     path: "{{ create_networks_tmp_dir }}"

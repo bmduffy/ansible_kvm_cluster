@@ -5,38 +5,47 @@
   hosts: localhost
   connection: local
   tasks:
+
     - name: "list VMs"
       virt:
         command: list_vms
       register: output
+
     - name: "Get VM list"
       set_fact:
          vm_names: "{{ output.list_vms }}"
+
     - name: "Undefine/remove all VMs from KVM"
       virt:
         name: "{{ item.name }}"
         command: undefine
       with_items: "{{ nodes.instances }}"
       when: item.name in vm_names
+
     - name: "Gather facts about VM disks"
       set_fact:
         delete_disks: []
+
     - name: "Compile list of disks to delete"
       set_fact:
         delete_disks: "{{ delete_disks }} + {{ item.disks }}"
       with_items: "{{ nodes.instances }}"
+
     - name: "Clean up all the disks"
       file:
         path: "{{ item.path }}"
         state: absent
       with_items: "{{ delete_disks }}"
-    - name: "list all cluster networks"
+
+    - name: "List all cluster networks"
       virt_net:
         command: list_nets
       register: output
+
     - name: "Get cluster network list"
       set_fact:
         net_names: "{{ output.list_nets }}"
+
     - name: "Undefine/remove all networks from KVM"
       virt_net:
         command: destroy

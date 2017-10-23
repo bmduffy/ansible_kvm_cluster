@@ -4,9 +4,8 @@
   become: no
   hosts: localhost
   connection: local
-  pre_tasks:
-    environment:
-      LIBGUESTFS_BACKEND: direct
+  environment:
+    LIBGUESTFS_BACKEND: direct
   roles:
     - {role: create_networks}
     - {role: create_instances}
