@@ -12,13 +12,13 @@
     mode: "0755"
 
 - name: "Check instances from virsh"
-  command: |
-    virsh --connect qemu:///system list --all --name
+  virt:
+    command: list_vms
   register: output
 
 - name: "Get a list of instances names"
   set_fact:
-    instance_list: "{{ output.stdout_lines }}"
+    instance_list: "{{ output.list_vms }}"
 
 - debug:
     msg: "{{ instance_list }}"

@@ -6,13 +6,13 @@
     state: directory
 
 - name: "Check networks from virsh"
-  command: |
-    virsh --connect qemu:///system net-list --name
+  virt_net:
+    command: list_nets
   register: output
 
 - name: "Get a list of networks"
   set_fact:
-    network_list: "{{ output.stdout_lines }}"
+    network_list: "{{ output.list_nets }}"
 
 - include: create_network.yml
   when: network.name not in network_list
