@@ -5,26 +5,32 @@
   hosts: localhost
   connection: local
   tasks:
+
     - name: "list VMs"
       virt:
         command: list_vms
       register: output
+
     - name: "Get VM list"
       set_fact:
         vm_names: "{{ output.list_vms }}"
+
     - name: "Shutdown all VMs"
       virt:
         name: "{{ item.name }}"
         state: shutdown
       with_items: "{{ nodes.instances }}"
       when: item.name in vm_names
+
     - name: "List all cluster networks"
       virt_net:
         command: list_nets
       register: output
+
     - name: "Get cluster network list"
       set_fact:
         net_names: "{{ output.list_nets }}"
+
     - name: "Render all networks inactive"
       virt_net:
         state: inactive

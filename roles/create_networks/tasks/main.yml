@@ -12,13 +12,16 @@
 
 - name: "Get a list of networks"
   set_fact:
-    network_list: "{{ output.list_nets }}"
+    net_names: "{{ output.list_nets }}"
 
-- include: create_network.yml
-  when: network.name not in network_list
-  with_items: "{{ networks }}"
+- name: "Define the network from '{{ xml_path }}' so it is persistent"
+  virt_net:
+    command: define
+    name: "{{ network.name }}"
+    xml: '{{ lookup("template", "net-create.xml.j2") }}'
   loop_control:
     loop_var: network
+  when: network.name not in net_names
 
 - name: "Start '{{ item.name }}' network so it is activated"
   virt_net:
@@ -31,8 +34,3 @@
     name: "{{ item.name }}"
     autostart: yes
   with_items: "{{ networks }}"
-
-- name: "Clean up temporary directory '{{ create_networks_tmp_dir }}'"
-  file:
-    path: "{{ create_networks_tmp_dir }}"
-    state: absent

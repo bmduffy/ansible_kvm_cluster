@@ -1,6 +1,6 @@
 ---
 
-- name: "Tear down cluster"
+- name: "Tear Down Cluster"
   become: no
   hosts: localhost
   connection: local
@@ -48,7 +48,7 @@
 
     - name: "Undefine/remove all networks from KVM"
       virt_net:
-        command: destroy
+        state: absent
         name: "{{ item.name }}"
       with_items: "{{ networks }}"
       when: item.name in net_names
