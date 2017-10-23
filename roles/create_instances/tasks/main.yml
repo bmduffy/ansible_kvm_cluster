@@ -5,12 +5,6 @@
     path: "{{ create_instances_tmp_dir }}"
     state: directory
 
-- name: "Generate host prep script"
-  template:
-    src: "host_prep.sh.j2"
-    dest: "{{ host_prep_script }}"
-    mode: "0755"
-
 - name: "Check instances from virsh"
   virt:
     command: list_vms
@@ -19,9 +13,6 @@
 - name: "Get a list of instances names"
   set_fact:
     instance_list: "{{ output.list_vms }}"
-
-- debug:
-    msg: "{{ instance_list }}"
 
 - include: provision_instance.yml
   when: instance.name not in instance_list

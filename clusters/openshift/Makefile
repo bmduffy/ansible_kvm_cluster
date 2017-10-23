@@ -1,5 +1,8 @@
 # Only need 4 playbooks to manage your cluster
 
+export CLUSTER_PATH=$(PWD)
+export CLUSTER_HOSTFILE_NAME=hosts
+
 provision:
 	ansible-playbook ../../plays/provision.yml
 

@@ -9,6 +9,12 @@
   args:
     creates: "{{ boot_disk }}"
 
+- name: "Generate host prep script"
+  template:
+    src: "host_prep.sh.j2"
+    dest: "{{ host_prep_script }}"
+    mode: "0755"
+
 - name: "Prepare '{{ instance.name }}' disk image for install"
   command: |
     virt-sysprep --connect qemu:///system \

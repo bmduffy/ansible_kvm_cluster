@@ -1,0 +1,2 @@
+local_dns_conf: "/etc/NetworkManager/conf.d/localdns.conf"
+libvirt_dnsmasq: "/etc/NetworkManager/dnsmasq.d/libvirt_dnsmasq.conf"

@@ -1,12 +1,19 @@
 ---
 
-- name: "Provision cluster"
+- name: "Provision Cluster"
   become: no
   hosts: localhost
   connection: local
   environment:
-    LIBGUESTFS_BACKEND: direct
+    LIBGUESTFS_BACKEND: "direct"
+  vars:
+    cluster_path: "{{ lookup('env', 'CLUSTER_PATH') }}"
+    hostfile: "{{ lookup('env', 'CLUSTER_HOSTFILE_NAME') }}"
+  pre_tasks:
+    - debug:
+        msg: "{{ cluster_path }}/{{ hostfile }}"
   roles:
+    - {role: generate_hostfile,
+        path: "{{ cluster_path }}/{{ hostfile }}" }
     - {role: create_networks}
     - {role: create_instances}
-    - {role: generate_hostfile}

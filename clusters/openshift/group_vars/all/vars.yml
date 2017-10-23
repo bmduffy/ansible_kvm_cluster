@@ -2,7 +2,6 @@
 
 # Obviously I want to chance to location of this to somewhere more general
 image_path: "/home/brian.duffy/libvirt/images"
-
 subdomain: "ocp.cluster.local"
 
 networks:
@@ -76,9 +75,3 @@ nodes:
         - path: "{{ image_path }}/mn02-disk2.qcow2"
           format: "qcow2"
           size: 20
-
-node_groups:
-  all:     ["mgmt", "ms01", "mn01", "mn02"]
-  mgmt:    ["mgmt"]
-  masters: ["ms01"]
-  nodes:   ["mn01", "mn02"]

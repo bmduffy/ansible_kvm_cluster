@@ -1,6 +1,6 @@
 ---
 
-- name: "Check networks from virsh"
+- name: "Check networks"
   virt_net:
     command: list_nets
   register: output
@@ -30,3 +30,33 @@
     name: "{{ item.name }}"
     autostart: yes
   with_items: "{{ networks }}"
+
+# This is apparently how to configure dnsmsq
+# https://liquidat.wordpress.com/2017/03/03/howto-automated-dns-resolution-for-kvmlibvirt-guests-with-a-local-domain/
+# This bug will prevent you from configuring hostnames via hostnamectl
+# https://bugzilla.redhat.com/show_bug.cgi?id=1049656
+- name: "Configure NetworkManager to start its own dnsmsq"
+  template:
+    src: "localdns.conf.j2"
+    dest: "{{ local_dns_conf }}"
+  become: yes
+
+- name: "Create a libvirt dnsmaq.conf file"
+  file:
+    path: "{{ libvirt_dnsmasq }}"
+    state: touch
+  become: yes
+
+- name: "Add servers to dnsmaq in NetworkManager"
+  lineinfile:
+    path: "{{ libvirt_dnsmasq }}"
+    regexp: "^server=/{{ subdomain }}/{{ networks[0].gateway }}"
+    line: "server=/{{ subdomain }}/{{ networks[0].gateway }}"
+    state: present
+  become: yes
+
+- name: "Restart NetworkManager"
+  systemd:
+    name: "NetworkManager"
+    state: reloaded
+  become: yes

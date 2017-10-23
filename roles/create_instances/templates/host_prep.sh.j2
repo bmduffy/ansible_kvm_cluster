@@ -5,4 +5,7 @@ sed -i -E 's/#PasswordAuthentication\s+yes/PasswordAuthentication yes/g' /etc/ss
 sed -i -E 's/^PasswordAuthentication\s+no/#PasswordAuthentication no/g' /etc/ssh/sshd_config
 restorecon -F /root/.ssh /root/.ssh/authorized_keys
 localectl set-x11-keymap {{ nodes.keymap }}
+setenforce 0
+systemctl restart systemd-hostnamed
+hostnamectl set-hostname {{ instance.name }}
 reboot

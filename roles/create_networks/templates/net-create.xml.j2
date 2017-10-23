@@ -1,8 +1,8 @@
 <network>
   <name>{{ network.name }}</name>
   <forward mode='{{ network.mode }}'/>
-  <ip address='{{ network.gateway }}'
-      netmask='{{ network.netmask }}'>
+  <domain name='{{ subdomain }}' localOnly='yes'/>
+  <ip address='{{ network.gateway }}' netmask='{{ network.netmask }}'>
     <dhcp>
       <range start='{{ network.dhcp.range.start }}'
              end='{{ network.dhcp.range.end }}'/>
