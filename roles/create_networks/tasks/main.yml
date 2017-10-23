@@ -1,10 +1,5 @@
 ---
 
-- name: "Create temporary directory '{{ create_networks_tmp_dir }}'"
-  file:
-    path: "{{ create_networks_tmp_dir }}"
-    state: directory
-
 - name: "Check networks from virsh"
   virt_net:
     command: list_nets
@@ -14,22 +9,23 @@
   set_fact:
     net_names: "{{ output.list_nets }}"
 
-- name: "Define the network from '{{ xml_path }}' so it is persistent"
+- name: "Define the networks"
   virt_net:
     command: define
     name: "{{ network.name }}"
     xml: '{{ lookup("template", "net-create.xml.j2") }}'
+  with_items: "{{ networks }}"
   loop_control:
     loop_var: network
   when: network.name not in net_names
 
-- name: "Start '{{ item.name }}' network so it is activated"
+- name: "Start networks so it is activated"
   virt_net:
     name: "{{ item.name }}"
     state: active
   with_items: "{{ networks }}"
 
-- name: "Set '{{ item.name }}' to autostart"
+- name: "Set networks to autostart"
   virt_net:
     name: "{{ item.name }}"
     autostart: yes

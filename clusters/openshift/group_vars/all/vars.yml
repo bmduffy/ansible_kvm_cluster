@@ -1,8 +1,9 @@
 ---
 
+# Obviously I want to chance to location of this to somewhere more general
 image_path: "/home/brian.duffy/libvirt/images"
 
-subdomain: "ocp.cluster.com"
+subdomain: "ocp.cluster.local"
 
 networks:
 - name: "openshift"
@@ -22,7 +23,7 @@ nodes:
   base_image: "{{ image_path }}/rhel-server-7.4-x86_64-kvm.qcow2"
   os_variant: "rhel7"
   instances:
-    - name: "mgmt"
+    - name: "nfs.{{ subdomain }}"
       cpus: 2
       memory: 2048
       nics:
@@ -33,7 +34,7 @@ nodes:
       disks:
         - path: "{{ image_path }}/lb01-disk1.qcow2"
           format: "qcow2"
-    - name: "ms01"
+    - name: "m1.{{ subdomain }}"
       cpus: 2
       memory: 2048
       nics:
@@ -47,7 +48,7 @@ nodes:
         - path: "{{ image_path }}/ms01-disk2.qcow2"
           format: "qcow2"
           size: 20
-    - name: "mn01"
+    - name: "n1.{{ subdomain }}"
       cpus: 1
       memory: 1024
       nics:
@@ -61,7 +62,7 @@ nodes:
         - path: "{{ image_path }}/mn01-disk2.qcow2"
           format: "qcow2"
           size: 20
-    - name: "mn02"
+    - name: "n2.{{ subdomain }}"
       cpus: 1
       memory: 1024
       nics:
