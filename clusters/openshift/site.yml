@@ -1,0 +1,13 @@
+---
+
+- include: ../../plays/provision.yml
+  tags: ["provision"]
+
+- include: ../../plays/startup.yml
+  tags: ["startup"]
+
+- include: ../../plays/shutdown.yml
+  tags: ["shutdown", "teardown"]
+
+- include: ../../plays/teardown.yml
+  tags: ["teardown"]

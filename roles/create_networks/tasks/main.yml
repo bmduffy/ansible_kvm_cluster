@@ -33,8 +33,7 @@
 
 # This is apparently how to configure dnsmsq
 # https://liquidat.wordpress.com/2017/03/03/howto-automated-dns-resolution-for-kvmlibvirt-guests-with-a-local-domain/
-# This bug will prevent you from configuring hostnames via hostnamectl
-# https://bugzilla.redhat.com/show_bug.cgi?id=1049656
+
 - name: "Configure NetworkManager to start its own dnsmsq"
   template:
     src: "localdns.conf.j2"

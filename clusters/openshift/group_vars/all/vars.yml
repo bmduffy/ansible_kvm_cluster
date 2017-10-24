@@ -33,7 +33,7 @@ nodes:
       disks:
         - path: "{{ image_path }}/lb01-disk1.qcow2"
           format: "qcow2"
-    - name: "m1.{{ subdomain }}"
+    - name: "m01.{{ subdomain }}"
       cpus: 2
       memory: 2048
       nics:
@@ -47,7 +47,7 @@ nodes:
         - path: "{{ image_path }}/ms01-disk2.qcow2"
           format: "qcow2"
           size: 20
-    - name: "n1.{{ subdomain }}"
+    - name: "n01.{{ subdomain }}"
       cpus: 1
       memory: 1024
       nics:
@@ -61,7 +61,7 @@ nodes:
         - path: "{{ image_path }}/mn01-disk2.qcow2"
           format: "qcow2"
           size: 20
-    - name: "n2.{{ subdomain }}"
+    - name: "n02.{{ subdomain }}"
       cpus: 1
       memory: 1024
       nics:
