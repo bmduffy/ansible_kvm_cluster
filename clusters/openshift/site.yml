@@ -1,5 +1,11 @@
 ---
 
+# Base Cluster Creates:
+# - Review `./group_vars/all/vars.yml`
+# - A set of procedurally described VMs
+# - A procedurally described host network
+# - Activate local DNS to resolve host and guest FQDN via NetworkManager
+
 - include: ../../plays/provision.yml
   tags: ["provision"]
 
@@ -11,3 +17,11 @@
 
 - include: ../../plays/teardown.yml
   tags: ["teardown"]
+
+# Openshift Container Platform (Enterprise)
+
+- include: ../../plays/openshift_hostfile.yml
+  tags: ["provision", "openshift", "hostfile"]
+
+# - include: ../../plays/openshift_disconnected.yml
+#   tags: ["provision", "openshift"]

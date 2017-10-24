@@ -6,9 +6,6 @@
   connection: local
   environment:
     LIBGUESTFS_BACKEND: "direct"
-  vars:
-    cluster_path: "{{ lookup('env', 'PWD') }}"
   roles:
-    - {role: generate_hostfile, path: "{{ cluster_path }}/hosts" }
     - {role: create_networks}
     - {role: create_instances}

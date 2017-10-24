@@ -23,6 +23,7 @@ nodes:
   os_variant: "rhel7"
   instances:
     - name: "nfs.{{ subdomain }}"
+      host_groups: ["all", "nfs"]
       cpus: 2
       memory: 2048
       nics:
@@ -34,6 +35,7 @@ nodes:
         - path: "{{ image_path }}/lb01-disk1.qcow2"
           format: "qcow2"
     - name: "m01.{{ subdomain }}"
+      host_groups: ["all", "masters", "etcd"]
       cpus: 2
       memory: 2048
       nics:
@@ -48,6 +50,7 @@ nodes:
           format: "qcow2"
           size: 20
     - name: "n01.{{ subdomain }}"
+      host_groups: ["all", "nodes"]
       cpus: 1
       memory: 1024
       nics:
@@ -62,6 +65,7 @@ nodes:
           format: "qcow2"
           size: 20
     - name: "n02.{{ subdomain }}"
+      host_groups: ["all", "nodes"]
       cpus: 1
       memory: 1024
       nics:
