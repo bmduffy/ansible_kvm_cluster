@@ -1,6 +1,6 @@
 ---
 
-# Base Cluster Creates:
+# Base Cluster Provision:
 # - Review `./group_vars/all/vars.yml`
 # - A set of procedurally described VMs
 # - A procedurally described host network
@@ -12,16 +12,22 @@
 - include: ../../plays/startup.yml
   tags: ["startup"]
 
-- include: ../../plays/shutdown.yml
-  tags: ["shutdown", "teardown"]
-
-- include: ../../plays/teardown.yml
-  tags: ["teardown"]
-
 # Openshift Container Platform (Enterprise)
 
 - include: ../../plays/openshift_hostfile.yml
   tags: ["provision", "openshift", "hostfile"]
 
-# - include: ../../plays/openshift_disconnected.yml
+- include: ../../plays/openshift_disconnected.yml
+  tags: ["provision", "openshift"]
+
+# - include: ../../plays/openshift_nfs_shares.yml
 #   tags: ["provision", "openshift"]
+
+
+# Base Cluster TearDown:
+
+- include: ../../plays/shutdown.yml
+  tags: ["shutdown", "teardown"]
+
+- include: ../../plays/teardown.yml
+  tags: ["teardown"]

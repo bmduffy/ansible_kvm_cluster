@@ -1,0 +1,17 @@
+---
+
+
+
+- name: "Check if a docker-pool is already configured"
+  shell: "lvs | egrep 'docker-pool'"
+  register: created
+  failed_when: created.rc not in (0, 1)
+
+- name: "Implement Option A. ..."
+  include: option_a.yml
+  when: created.rc != 0 and storage_option == 'A'
+
+# I don't even want to comment this in because of the incident ...
+# - name: "Implement Option C. ..."
+#   include: option_c.yml
+#   when: created.rc != 0 and storage_option == 'C'

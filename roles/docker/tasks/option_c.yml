@@ -1,0 +1,44 @@
+---
+
+# Option C. Use the rest of the free space in the root logical volume
+
+- name: "Ensure docker is stopped"
+  service:
+    name: "docker"
+    state: stopped
+    enabled: no
+
+- name: "This config file can't be here if we go with Option C."
+  file:
+    path: "/etc/sysconfig/docker-storage-setup"
+    state: absent
+
+- name: "DESTROY!!! containers and images, this is tremendously destructive ...."
+  shell: "rm -rf /var/lib/docker/*"
+
+- name: "Get RHEL volume group name"
+  shell: "lvs | grep root | awk '{print $2}'"
+  register: volume_group
+
+- name: "Resize the root logical volumelogical volume"
+  lvol:
+    vg: "{{ volume_group.stdout }}"
+    lv: "root"
+    size: "30G"
+    shrink: True
+    force: yes
+
+- name: "Run docker storage setup"
+  shell: "docker-storage-setup"
+
+- name: "Check dm.thinpooldev value in /etc/sysconfig/docker-storage"
+  shell: "egrep 'dm.thinpooldev=' /etc/sysconfig/docker-storage"
+
+- name: "Check docker-pool LV exists"
+  shell: "lvs | egrep 'docker-pool'"
+
+- name: "Start and enable docker service"
+  systemd:
+    name: docker
+    state: started
+    enabled: yes

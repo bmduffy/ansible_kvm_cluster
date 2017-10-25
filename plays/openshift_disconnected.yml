@@ -1,0 +1,10 @@
+---
+
+- name: "Setup hosts for a disconnected repo"
+  hosts: repo
+  roles:
+      - {role: subscribe,
+          username: "{{ redhat.username }}",
+          password: "{{ redhat.password }}",
+          pools: ["{{ redhat.subscription.pool}}"],
+          repos: "{{ redhat.repos }}"}

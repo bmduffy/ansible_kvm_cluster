@@ -1,0 +1,6 @@
+{% if  hostvars[inventory_hostname]['block_device'] is defined  %}
+DEVS={{ hostvars[inventory_hostname].block_device }}
+{% else %}
+DEVS={{ block_device }}
+{% endif %}
+VG=docker-vg

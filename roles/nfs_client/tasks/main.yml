@@ -1,0 +1,24 @@
+---
+- name: "Install NFS packages"
+  yum:
+    name: "{{ pkg }}"
+    state: present
+  with_items: ["nfs-utils", "nfs-utils-lib"]
+  loop_control:
+    loop_var: pkg
+- name:  "Start NFS clients"
+  systemd:
+    name: nfs
+    state: started
+- name: "Enable services"
+  systemd:
+    name: nfs
+    enabled: yes
+- name: "Default all container access for NFS"
+  seboolean:
+    name: "{{ selopt }}"
+    state: yes
+    persistent: yes
+  with_items: ["virt_use_nfs", "virt_sandbox_use_nfs"]
+  loop_control:
+    loop_var: selopt

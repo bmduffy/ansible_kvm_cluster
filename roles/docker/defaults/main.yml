@@ -1,0 +1,6 @@
+---
+
+# parameter configures what kind of env we install in POC or production
+storage: "proof-of-concept"
+block_device: "sdb"
+storage_option: "A"

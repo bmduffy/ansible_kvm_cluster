@@ -1,0 +1,32 @@
+---
+
+- name: "Ensure docker is stopped"
+  service:
+    name: "docker"
+    state: stopped
+    enabled: no
+
+- name: "DESTROY!!! containers and images, this is tremendously destructive ...."
+  shell: "rm -rf /var/lib/docker/*"
+
+- name: "Copy storage setup config template pointing to extra block device"
+  template:
+    src: "storage-setup.j2"
+    dest: "/etc/sysconfig/docker-storage-setup"
+    force: yes
+    backup: yes
+
+- name: "Run docker storage setup"
+  shell: "docker-storage-setup"
+
+- name: "Check dm.thinpooldev value in /etc/sysconfig/docker-storage"
+  shell: "egrep 'dm.thinpooldev=' /etc/sysconfig/docker-storage"
+
+- name: "Check docker-pool LV exists"
+  shell: "lvs | egrep 'docker-pool'"
+
+- name: "Start and enable docker service"
+  systemd:
+    name: docker
+    state: started
+    enabled: yes

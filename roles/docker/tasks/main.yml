@@ -1,0 +1,23 @@
+---
+
+- name: "Install docker service"
+  yum:
+    name: "docker"
+    state: present
+
+- name: "Set docker options"
+  lineinfile:
+    dest: "/etc/sysconfig/docker"
+    line: "OPTIONS='--selinux-enabled --insecure-registry 172.30.0.0/16'"
+    regexp: "^OPTIONS="
+    state: present
+
+# configure docker storage
+- include: docker_storage_setup.yml
+  when: storage == "production"
+
+- name: "Restart docker servce and ensure it is enabled"
+  systemd:
+    name: docker
+    state: restarted
+    enabled: yes

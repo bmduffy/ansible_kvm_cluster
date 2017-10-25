@@ -1,0 +1,15 @@
+---
+
+- name: "Generating host file from host group map"
+  debug:
+    msg: "{{ host_groups }}"
+
+- name: "Create openshift host file here"
+  debug:
+    msg: "{{ path }}"
+
+- name: "Generate Openshift host file from template"
+  template:
+    src: "hosts.yml.j2"
+    dest: "{{ path }}/hosts.yml"
+    force: yes

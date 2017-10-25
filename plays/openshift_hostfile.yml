@@ -1,0 +1,15 @@
+---
+
+- name: "Generate Openshift Hostfile"
+  become: no
+  hosts: localhost
+  connection: local
+  vars:
+    cluster_source_path: "{{ lookup('env', 'PWD') }}"
+    host_group_map: {}
+  roles:
+    - {role: compile_host_groups,
+        instances: "{{ nodes.instances }}"}
+    - {role: openshift_hostfile,
+        path: "{{ cluster_source_path }}",
+        host_groups: "{{ host_group_map }}" }

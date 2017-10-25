@@ -1,0 +1,18 @@
+---
+
+- name: "Compile list of host unique group names"
+  set_fact:
+    host_groups: "{{ host_groups | default([]) | union(item.host_groups) }}"
+  with_items: "{{ instances }}"
+
+- name: "Create an empty host group map"
+  set_fact:
+    host_group_map : "{{ host_group_map | default({}) | combine({item: []})}}"
+  with_items: "{{ host_groups }}"
+
+- name: "Sort hosts into the host group map"
+  set_fact:
+    host_group_map: "{{ host_group_map | combine({ item.1: host_group_map[item.1] + [item.0.name]}) }}"
+  with_subelements:
+    - "{{ instances }}"
+    - "host_groups"
