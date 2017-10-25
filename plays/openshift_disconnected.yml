@@ -6,5 +6,5 @@
       - {role: subscribe,
           username: "{{ redhat.username }}",
           password: "{{ redhat.password }}",
-          pools: ["{{ redhat.subscription.pool}}"],
+          pools: ["{{ redhat.subscription.pool }}"],
           repos: "{{ redhat.repos }}"}

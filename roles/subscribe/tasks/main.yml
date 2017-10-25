@@ -8,7 +8,7 @@
   failed_when: result.rc not in (0, 64)
 
 - name: "Check subscription status"
-  command: subscription-manager list | grep "Status:" | grep "Not Subscribed"
+  shell: subscription-manager list | grep "Status:" | grep "Not Subscribed"
   register: status
   failed_when: status.rc not in (0, 1)
 

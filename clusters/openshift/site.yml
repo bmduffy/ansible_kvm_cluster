@@ -12,10 +12,10 @@
 - include: ../../plays/startup.yml
   tags: ["startup"]
 
-# Openshift Container Platform (Enterprise)
+# Openshift Container Platform (Enterprise) System Preparation
 
 - include: ../../plays/openshift_hostfile.yml
-  tags: ["provision", "openshift", "hostfile"]
+  tags: ["hostfile"]
 
 - include: ../../plays/openshift_disconnected.yml
   tags: ["provision", "openshift"]
@@ -23,6 +23,8 @@
 # - include: ../../plays/openshift_nfs_shares.yml
 #   tags: ["provision", "openshift"]
 
+- include: ../../plays/openshift_unsubscribe.yml
+  tags: ["teardown"]
 
 # Base Cluster TearDown:
 
