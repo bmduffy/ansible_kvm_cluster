@@ -8,3 +8,10 @@
           password: "{{ redhat.password }}",
           pools: ["{{ redhat.subscription.pool }}"],
           repos: "{{ redhat.repos }}"}
+      - {role: docker, storage: "production", block_device: "vdb"}
+  tasks:
+      - name: "Install packages to make this node our repo"
+        yum:
+            name: "{{ item }}"
+            state: present
+        with_items: ["yum-utils", "createrepo", "git", "httpd"]
