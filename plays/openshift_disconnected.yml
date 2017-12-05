@@ -1,17 +1,95 @@
 ---
 
-- name: "Setup hosts for a disconnected repo"
+- name: "Setup hosts for a disconnected repo node"
   hosts: repo
+
+  vars:
+      rpm_repo: "/ocp/repos"
+      img_repo: "/ocp/images"
+      
+  pre_tasks:
+      - name: "May be required to import GPG keys"
+        shell: "rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release"
+
   roles:
       - {role: subscribe,
           username: "{{ redhat.username }}",
           password: "{{ redhat.password }}",
           pools: ["{{ redhat.subscription.pool }}"],
-          repos: "{{ redhat.repos }}"}
+          repos: "{{ redhat.rpms.repos }}"}
       - {role: docker, storage: "production", block_device: "vdb"}
+
   tasks:
-      - name: "Install packages to make this node our repo"
+      - name: "Install packages to make this node our repo, yum-utils provides reposync"
         yum:
             name: "{{ item }}"
             state: present
-        with_items: ["yum-utils", "createrepo", "git", "httpd"]
+        with_items: ["yum-utils", "createrepo", "git"]
+
+      - name: "Ensure '{{ rpm_repo }}' exists"
+        file:
+            path: "{{ rpm_repo }}"
+            state: directory
+
+      - name: "Download repos"
+        shell: |
+            reposync --gpgcheck -lm --repoid={{ item }} --download_path={{ rpm_repo }}
+        with_items: "{{ redhat.rpms.repos }}"
+
+      - name: "Create and sync repos"
+        shell: |
+            createrepo -v {{ rpm_repo }}/{{ item }}  -o {{ rpm_repo }}/{{ item }}
+        with_items: "{{ redhat.rpms.repos }}"
+
+      - name: "Pull all required OCP containerized components"
+        docker_image:
+            name: "{{ item }}"
+            tag: "{{ redhat.ocp.tag }}"
+            state: "present"
+        with_items: "{{ redhat.ocp.images }}"
+
+      - name: "Pull all additional OCP images for logging and metrics"
+        docker_image:
+            name: "{{ item }}"
+            tag: "{{ redhat.ocp_add.tag }}"
+            state: "present"
+        with_items: "{{ redhat.ocp_add.images }}"
+
+      - name: "Pull all extra OCP images"
+        docker_image:
+            name: "{{ item }}"
+            tag: "{{ redhat.ocp_extr.tag }}"
+            state: "present"
+        with_items: "{{ redhat.ocp_extr.images }}"
+
+      - name: "Pull all S2I images"
+        docker_image:
+            name: "{{ item }}"
+            state: "present"
+        with_items: "{{ redhat.ocp_s2i.images }}"
+
+      - name: "Create directory for '{{ img_repo }}'"
+        file:
+            path: "{{ img_repo }}"
+            state: directory
+
+      - name: "Install httpd to expose repos"
+        yum:
+            name: "httpd"
+            state: present
+
+      - name: "Ensure http service is started"
+        systemd:
+            name: "httpd"
+            state: started
+            enabled: yes
+
+- name: "Connect all other nodes to the repo node"
+  hosts: nodes
+  vars:
+      repo_server_hostname: "{{ repo[0].inventory_hostname }}"
+  tasks:
+      - name: "Copy the repo template to each node"
+        template:
+            src: "templates/ose.repo.j2"
+            dest: "/etc/yum.repos.d/ose.repo"

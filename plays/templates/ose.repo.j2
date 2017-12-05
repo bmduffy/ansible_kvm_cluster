@@ -1,0 +1,7 @@
+{% for repo_name in redhat.rpms.repos %}
+[{{ repo_name }}]
+name={{ repo_name }}
+baseurl=http://{{ repo_server_hostname }}/repos/{{ repo_name }}
+enabled=1
+gpgcheck=0
+{% endfor %}
