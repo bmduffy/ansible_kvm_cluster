@@ -17,11 +17,11 @@
 - include: ../../plays/openshift_hostfile.yml
   tags: ["hostfile"]
 
-- include: ../../plays/openshift_disconnected.yml
-  tags: ["provision", "openshift"]
+#- include: ../../plays/openshift_disconnected.yml
+#  tags: ["provision", "openshift"]
 
-# - include: ../../plays/openshift_nfs_shares.yml
-#   tags: ["provision", "openshift"]
+#- include: ../../plays/openshift_nfs_shares.yml
+#  tags: ["provision", "openshift"]
 
 - include: ../../plays/openshift_unsubscribe.yml
   tags: ["teardown"]

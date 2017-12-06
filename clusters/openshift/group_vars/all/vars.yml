@@ -36,7 +36,8 @@ nodes:
           disks:
               - path: "{{ image_path }}/nfs-disk1.qcow2"
                 format: "qcow2"
-              - path: "{{ image_path }}/ms01-disk2.qcow2"
+                size: 150
+              - path: "{{ image_path }}/nfs-disk2.qcow2"
                 format: "qcow2"
                 size: 20
 

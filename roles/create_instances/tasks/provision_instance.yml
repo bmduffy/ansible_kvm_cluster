@@ -1,13 +1,41 @@
 ---
 
+# Modifying images
+# https://docs.openstack.org/image-guide/modify-images.html
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-guest_virtual_machine_disk_access_with_offline_tools-virt_resize_resizing_guest_virtual_machines_offline
+
 - name: "Get boot disk path ..."
   set_fact:
-    boot_disk : "{{ instance.disks[0].path }}"
+      boot_disk : "{{ instance.disks[0].path }}"
+
+- name: "Get boot disk size ..."
+  set_fact:
+      desired_boot_disk_size: "{{ instance.disks[0].size }}"
 
 - name: "Copy base image disk for '{{ instance.name }}'"
   command: "cp {{ nodes.base_image }} {{ boot_disk }}"
   args:
-    creates: "{{ boot_disk }}"
+      creates: "{{ boot_disk }}"
+
+- name: "Check what the boot disk size is"
+  command: "qemu-img info {{ boot_disk }} | grep 'virtual size:' | awk '{print $3}'"
+  register: output
+
+- name: "Store and convert boot size to an integer"
+  set_fact:
+      actual_boot_disk_size: "{{ output.stdout[:-1] | int }}"
+
+- name: "DEBUG ... "
+  debug:
+      msg: "desired = {{ desired_boot_disk_size }}    actual = {{ actual_boot_disk_size }}"
+
+# - name: "Resize the boot disk if a size is specified"
+#   command: "qemu-img resize {{ boot_disk }} {{ instance.disks[0].size }}"
+#   when: instance.disks[0].size is defined
+#
+# - name: "Expand root partition to use the rest of the disk if resized"
+#   command: ""
+#   become: yes
 
 - name: "Generate host prep script"
   template:
