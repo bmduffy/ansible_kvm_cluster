@@ -8,40 +8,34 @@
   set_fact:
       boot_disk : "{{ instance.disks[0].path }}"
 
-- name: "Get boot disk size ..."
-  set_fact:
-      desired_boot_disk_size: "{{ instance.disks[0].size }}"
-
 - name: "Copy base image disk for '{{ instance.name }}'"
   command: "cp {{ nodes.base_image }} {{ boot_disk }}"
   args:
       creates: "{{ boot_disk }}"
 
 - name: "Check what the boot disk size is"
-  command: "qemu-img info {{ boot_disk }} | grep 'virtual size:' | awk '{print $3}'"
+  command: "qemu-img info {{ boot_disk }}"
   register: output
 
 - name: "Store and convert boot size to an integer"
   set_fact:
-      actual_boot_disk_size: "{{ output.stdout[:-1] | int }}"
+      actual_boot_disk_size: "{{ output.stdout_lines[2].split()[2][:-1] | int }}"
 
-- name: "DEBUG ... "
-  debug:
-      msg: "desired = {{ desired_boot_disk_size }}    actual = {{ actual_boot_disk_size }}"
+- name: "Get boot disk size ..."
+  set_fact:
+      desired_boot_disk_size: "{{ instance.disks[0].size | default(actual_boot_disk_size)}}"
 
-# - name: "Resize the boot disk if a size is specified"
-#   command: "qemu-img resize {{ boot_disk }} {{ instance.disks[0].size }}"
-#   when: instance.disks[0].size is defined
-#
-# - name: "Expand root partition to use the rest of the disk if resized"
-#   command: ""
-#   become: yes
+- name: "Resize boot disk and expand root partition"
+  shell: |
+    qemu-img resize {{ boot_disk }} {{ instance.disks[0].size }}G && \
+    virt-resize --expand /dev/sda1 {{ nodes.base_image }} {{ boot_disk }}
+  when: actual_boot_disk_size < desired_boot_disk_size
 
 - name: "Generate host prep script"
   template:
-    src: "host_prep.sh.j2"
-    dest: "{{ host_prep_script }}"
-    mode: "0755"
+      src: "host_prep.sh.j2"
+      dest: "{{ host_prep_script }}"
+      mode: "0755"
 
 - name: "Prepare '{{ instance.name }}' disk image for install"
   command: |
