@@ -1,6 +1,6 @@
 ---
 
-- name: "Setup hosts for a disconnected repo node"
+- name: "Setup node as a yum repo server"
   hosts: repo
   vars:
       rpm_repo: "/var/www/html/repos"
@@ -24,30 +24,54 @@
             path: "{{ rpm_repo }}"
             state: directory
 
-      - name: "Download repos to '{{ inventory_hostname }}' ..."
-        shell: |
+      - name: "Create yum repo on '{{ inventory_hostname }}' ... This will take some time"
+        command: |
             reposync --gpgcheck -lm \
-                --repoid={{ item }} --download_path={{ rpm_repo }}
-        with_items: "{{ redhat.rpms.repos }}"
-
-      - name: "Create and sync repos"
-        shell: |
+                     --repoid={{ item }} --download_path={{ rpm_repo }} && \
             createrepo -v {{ rpm_repo }}/{{ item }}  \
                        -o {{ rpm_repo }}/{{ item }}
+        args:
+            creates: "{{ rpm_repo }}/{{ item }}/repodata"
         with_items: "{{ redhat.rpms.repos }}"
 
-      - name: "Install httpd to expose repos"
-        yum:
-            name: "httpd"
-            state: present
+      - name: "Recursively set permissions on repo data '{{ rpm_repo }}'"
+        file:
+            path: "{{ rpm_repo }}"
+            state: directory
+            owner: root
+            group: root
+            mode: 0644
+            recurse: yes
 
-      - name: "Ensure http service is started"
+      - name: "Restore files default SELinux security context"
+        command: "restorecon -vR /var/www/html"
+
+      - name: "Set this server up as an Apache server"
+        yum:
+            name: "{{ item }}"
+            state: present
+        with_items: ["httpd", "firewalld"]
+
+      - name: "Enable and start firewalld"
+        systemd:
+            name: "firewalld"
+            state: started
+            enabled: yes
+
+      - name: "Add firewall rules for http requests"
+        firewalld:
+            service: http
+            permanent: true
+            state: enabled
+            immediate: true
+
+      - name: "Enable and start httpd Apache server"
         systemd:
             name: "httpd"
             state: started
             enabled: yes
 
-- name: "Connect all other nodes to the repo node"
+- name: "Point '{{ inventory_hostname }}' OCP node at the yum repo server"
   hosts: nodes
   vars:
       repo_server_hostname: "{{ repo[0].inventory_hostname }}"
@@ -57,7 +81,7 @@
             src: "templates/ose.repo.j2"
             dest: "/etc/yum.repos.d/ose.repo"
 
-- name: "Setup hosts for a disconnected repo node"
+- name: "Setup node as a docker registry"
   hosts: repo
   vars:
       img_repo: "/ocp/images"
