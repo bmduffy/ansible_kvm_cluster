@@ -7,18 +7,17 @@
       rpm_repo: "/ocp/repos"
       img_repo: "/ocp/images"
 
-  roles:
-      - {role: subscribe,
-          username: "{{ redhat.username }}",
-          password: "{{ redhat.password }}",
-          pools: ["{{ redhat.subscription.pool }}"],
-          repos: "{{ redhat.rpms.repos }}"}
-
   tasks:
-      - name: "May be required to import GPG keys"
-        shell: "rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release"
+      
+      # Work Around; There is currently no xfs support for virt-resize so need
+      # to grow the root files system manually
+      - name: "Make sure the root device is filling the disk"
+        command: "xfs_growfs -d /dev/vda1"
 
-      - name: "Install packages to make this node our repo, yum-utils provides reposync"
+      - name: "May be required to import GPG keys"
+        command: "rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release"
+
+      - name: "Install packages, yum-utils provides reposync"
         yum:
             name: "{{ item }}"
             state: present
@@ -29,14 +28,16 @@
             path: "{{ rpm_repo }}"
             state: directory
 
-      - name: "Download repos"
+      - name: "Download repos to {{ inventory_hostname }}"
         shell: |
-            reposync --gpgcheck -lm --repoid={{ item }} --download_path={{ rpm_repo }}
+            reposync --gpgcheck -lm \
+                --repoid={{ item }} --download_path={{ rpm_repo }}
         with_items: "{{ redhat.rpms.repos }}"
 
       - name: "Create and sync repos"
         shell: |
-            createrepo -v {{ rpm_repo }}/{{ item }}  -o {{ rpm_repo }}/{{ item }}
+            createrepo -v {{ rpm_repo }}/{{ item }}  \
+                       -o {{ rpm_repo }}/{{ item }}
         with_items: "{{ redhat.rpms.repos }}"
 
       - name: "Pull all required OCP containerized components"

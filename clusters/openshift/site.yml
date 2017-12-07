@@ -27,18 +27,18 @@
           pools: ["{{ redhat.subscription.pool }}"],
           repos: "{{ redhat.rpms.repos }}"}
 
-#- include: ../../plays/openshift_disconnected.yml
-#  tags: ["provision", "openshift"]
+- include: ../../plays/openshift_disconnected.yml
+  tags: ["provision", "openshift"]
 
-#- include: ../../plays/openshift_nfs_shares.yml
-#  tags: ["provision", "openshift"]
+- include: ../../plays/openshift_nfs_shares.yml
+  tags: ["provision", "openshift"]
 
-# - name: "Unsubscribe repo node from Red Hat CDN network"
-#   hosts: repo
-#   tags: ["teardown"]
-#   tasks:
-#     - command: "subscription-manager remove --all"
-#     - command: "subscription-manager unregister"
+- name: "Unsubscribe repo node from Red Hat CDN network"
+  hosts: repo
+  tags: ["teardown"]
+  tasks:
+    - command: "subscription-manager remove --all"
+    - command: "subscription-manager unregister"
 
 # Base Cluster TearDown:
 
