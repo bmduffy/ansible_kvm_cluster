@@ -19,19 +19,33 @@
 
 - name: "Subscribe repo node to Red Hat CDN network"
   hosts: repo
-  tags: ["provision", "openshift"]
   roles:
       - {role: subscribe,
           username: "{{ redhat.username }}",
           password: "{{ redhat.password }}",
           pools: ["{{ redhat.subscription.pool }}"],
           repos: "{{ redhat.rpms.repos }}"}
+  tags: ["provision", "openshift"]
 
 - include: ../../plays/openshift_disconnected.yml
   tags: ["provision", "openshift"]
 
-- include: ../../plays/openshift_nfs_shares.yml
+- name: "Configure NFS servers"
+  hosts: nfs
+  roles:
+      - {role: nfs_server,
+               container_shares: ["registry", "logging", "metrics"]}
   tags: ["provision", "openshift"]
+
+- name: "Configure NFS clients"
+  hosts: nodes
+  roles:
+      - {role: nfs_client}
+  tags: ["provision", "openshift"]
+
+# Add this in later 
+# - include: ../../plays/openshift_host_prep.yml
+#   tags: ["provision", "openshift"]
 
 - name: "Unsubscribe repo node from Red Hat CDN network"
   hosts: repo

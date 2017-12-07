@@ -2,13 +2,9 @@
 
 - name: "Setup hosts for a disconnected repo node"
   hosts: repo
-
   vars:
-      rpm_repo: "/ocp/repos"
-      img_repo: "/ocp/images"
-
+      rpm_repo: "/var/www/html/repos"
   tasks:
-      
       # Work Around; There is currently no xfs support for virt-resize so need
       # to grow the root files system manually
       - name: "Make sure the root device is filling the disk"
@@ -28,7 +24,7 @@
             path: "{{ rpm_repo }}"
             state: directory
 
-      - name: "Download repos to {{ inventory_hostname }}"
+      - name: "Download repos to '{{ inventory_hostname }}' ..."
         shell: |
             reposync --gpgcheck -lm \
                 --repoid={{ item }} --download_path={{ rpm_repo }}
@@ -40,6 +36,34 @@
                        -o {{ rpm_repo }}/{{ item }}
         with_items: "{{ redhat.rpms.repos }}"
 
+      - name: "Install httpd to expose repos"
+        yum:
+            name: "httpd"
+            state: present
+
+      - name: "Ensure http service is started"
+        systemd:
+            name: "httpd"
+            state: started
+            enabled: yes
+
+- name: "Connect all other nodes to the repo node"
+  hosts: nodes
+  vars:
+      repo_server_hostname: "{{ repo[0].inventory_hostname }}"
+  tasks:
+      - name: "Copy the repo template to each node"
+        template:
+            src: "templates/ose.repo.j2"
+            dest: "/etc/yum.repos.d/ose.repo"
+
+- name: "Setup hosts for a disconnected repo node"
+  hosts: repo
+  vars:
+      img_repo: "/ocp/images"
+  roles:
+      - {role: docker, storage: "production"}
+  tasks:
       - name: "Pull all required OCP containerized components"
         docker_image:
             name: "{{ item }}"
@@ -71,24 +95,3 @@
         file:
             path: "{{ img_repo }}"
             state: directory
-
-      - name: "Install httpd to expose repos"
-        yum:
-            name: "httpd"
-            state: present
-
-      - name: "Ensure http service is started"
-        systemd:
-            name: "httpd"
-            state: started
-            enabled: yes
-
-- name: "Connect all other nodes to the repo node"
-  hosts: nodes
-  vars:
-      repo_server_hostname: "{{ repo[0].inventory_hostname }}"
-  tasks:
-      - name: "Copy the repo template to each node"
-        template:
-            src: "templates/ose.repo.j2"
-            dest: "/etc/yum.repos.d/ose.repo"
