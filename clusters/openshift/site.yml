@@ -43,7 +43,7 @@
       - {role: nfs_client}
   tags: ["provision", "openshift"]
 
-# Add this in later 
+# Add this in later
 # - include: ../../plays/openshift_host_prep.yml
 #   tags: ["provision", "openshift"]
 
@@ -51,8 +51,10 @@
   hosts: repo
   tags: ["teardown"]
   tasks:
-    - command: "subscription-manager remove --all"
-    - command: "subscription-manager unregister"
+    - name: "Removing all subscriptions"
+      command: "subscription-manager remove --all"
+    - name: "Unregistering all systems"
+      command: "subscription-manager unregister"
 
 # Base Cluster TearDown:
 
