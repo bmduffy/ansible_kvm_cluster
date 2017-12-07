@@ -6,10 +6,6 @@
   vars:
       rpm_repo: "/ocp/repos"
       img_repo: "/ocp/images"
-      
-  pre_tasks:
-      - name: "May be required to import GPG keys"
-        shell: "rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release"
 
   roles:
       - {role: subscribe,
@@ -17,9 +13,11 @@
           password: "{{ redhat.password }}",
           pools: ["{{ redhat.subscription.pool }}"],
           repos: "{{ redhat.rpms.repos }}"}
-      - {role: docker, storage: "production", block_device: "vdb"}
 
   tasks:
+      - name: "May be required to import GPG keys"
+        shell: "rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release"
+
       - name: "Install packages to make this node our repo, yum-utils provides reposync"
         yum:
             name: "{{ item }}"

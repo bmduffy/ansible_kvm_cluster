@@ -17,14 +17,28 @@
 - include: ../../plays/openshift_hostfile.yml
   tags: ["hostfile"]
 
+- name: "Subscribe repo node to Red Hat CDN network"
+  hosts: repo
+  tags: ["provision", "openshift"]
+  roles:
+      - {role: subscribe,
+          username: "{{ redhat.username }}",
+          password: "{{ redhat.password }}",
+          pools: ["{{ redhat.subscription.pool }}"],
+          repos: "{{ redhat.rpms.repos }}"}
+
 #- include: ../../plays/openshift_disconnected.yml
 #  tags: ["provision", "openshift"]
 
 #- include: ../../plays/openshift_nfs_shares.yml
 #  tags: ["provision", "openshift"]
 
-- include: ../../plays/openshift_unsubscribe.yml
-  tags: ["teardown"]
+# - name: "Unsubscribe repo node from Red Hat CDN network"
+#   hosts: repo
+#   tags: ["teardown"]
+#   tasks:
+#     - command: "subscription-manager remove --all"
+#     - command: "subscription-manager unregister"
 
 # Base Cluster TearDown:
 
