@@ -25,7 +25,7 @@
             state: directory
 
       - name: "Create yum repo on '{{ inventory_hostname }}' ... This will take some time"
-        command: |
+        shell: |
             reposync --gpgcheck -lm \
                      --repoid={{ item }} --download_path={{ rpm_repo }} && \
             createrepo -v {{ rpm_repo }}/{{ item }}  \
