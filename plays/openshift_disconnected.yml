@@ -2,11 +2,14 @@
 
 - name: "Setup node as a yum repo server"
   hosts: repo
+
   vars:
       rpm_repo: "/var/www/html/repos"
+
   tasks:
-      # Work Around; There is currently no xfs support for virt-resize so need
-      # to grow the root files system manually
+      # TODO:
+      # Work Around; There is currently no xfs support for virt-resize
+      # so need to grow the root files system manually
       - name: "Make sure the root device is filling the disk"
         command: "xfs_growfs -d /dev/vda1"
 
@@ -24,10 +27,16 @@
             path: "{{ rpm_repo }}"
             state: directory
 
-      - name: "Create yum repo on '{{ inventory_hostname }}' ... This will take some time"
+      - name: "Get rpm packages '{{ inventory_hostname }}'"
         shell: |
             reposync --gpgcheck -lm \
-                     --repoid={{ item }} --download_path={{ rpm_repo }} && \
+                     --repoid={{ item }} --download_path={{ rpm_repo }}
+        args:
+            creates: "{{ rpm_repo }}/{{ item }}/Packages"
+        with_items: "{{ redhat.rpms.repos }}"
+
+      - name: "Create yum repository '{{ inventory_hostname }}'"
+        shell: |
             createrepo -v {{ rpm_repo }}/{{ item }}  \
                        -o {{ rpm_repo }}/{{ item }}
         args:
@@ -71,22 +80,15 @@
             state: started
             enabled: yes
 
-- name: "Point '{{ inventory_hostname }}' OCP node at the yum repo server"
-  hosts: nodes
-  vars:
-      repo_server_hostname: "{{ repo[0].inventory_hostname }}"
-  tasks:
-      - name: "Copy the repo template to each node"
-        template:
-            src: "templates/ose.repo.j2"
-            dest: "/etc/yum.repos.d/ose.repo"
-
 - name: "Setup node as a docker registry"
   hosts: repo
+
   vars:
       img_repo: "/ocp/images"
+
   roles:
       - {role: docker, storage: "production"}
+
   tasks:
       - name: "Pull all required OCP containerized components"
         docker_image:

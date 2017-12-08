@@ -1,7 +1,8 @@
 ---
 
-# Obviously I want to chance to location of this to somewhere more general
+# TODO: This should be a less specific location
 image_path: "/home/brian.duffy/libvirt/images"
+
 subdomain: "ocp.cluster.local"
 
 networks:

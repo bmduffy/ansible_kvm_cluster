@@ -43,9 +43,8 @@
       - {role: nfs_client}
   tags: ["provision", "openshift"]
 
-# Add this in later
-# - include: ../../plays/openshift_host_prep.yml
-#   tags: ["provision", "openshift"]
+- include: ../../plays/openshift_host_prep.yml
+  tags: ["provision", "openshift"]
 
 - name: "Unsubscribe repo node from Red Hat CDN network"
   hosts: repo

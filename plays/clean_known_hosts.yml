@@ -1,0 +1,21 @@
+---
+
+- name: "Clean '~/.ssh/known_hosts'"
+  hosts: localhost
+  connection: local
+  become: yes
+  vars:
+    user: "{{ lookup('env', 'USER') }}"
+    subnet: "{{ cluster.networks.net0.subnet.split('/')[0].split('.')[0:3] | join('.')}}"
+  tasks:
+    - name: "Remove hosts from known_hosts"
+      lineinfile:
+        path: "/home/{{ user }}/.ssh/known_hosts"
+        state: absent
+        regexp: "^{{ hostvars[item].inventory_hostname_short }}"
+      with_items: "{{ groups.all }}"
+    - name: "Remove any IPs from the clusters subnet"
+      lineinfile:
+        path: "/home/{{ user }}/.ssh/known_hosts"
+        state: absent
+        regexp: "^{{ subnet }}.[1-9]?[0-9]?[0-9]"
