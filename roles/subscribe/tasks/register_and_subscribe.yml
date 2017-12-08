@@ -1,0 +1,32 @@
+---
+
+- name: "Register system with Red Hat"
+  command : |
+    subscription-manager register \
+        --username {{ username }} \
+        --password {{ password }}
+  register: result
+  failed_when: result.rc not in (0, 64)
+
+- name: "Check subscription status"
+  command: |
+    subscription-manager list | grep "Status:" | grep "Not Subscribed"
+  register: status
+  failed_when: status.rc not in (0, 1)
+
+- name: "Attach subscription pool"
+  command: |
+    subscription-manager attach --pool {{ item }}
+  with_items: "{{ pools }}"
+  when: status.rc is defined and status.rc == 0
+
+- name: "Disable all repositories"
+  command: |
+      subscription-manager repos --disable="*"
+  when: status.rc is defined
+
+- name: "Enable all repos for OpenShift"
+  command: |
+    subscription-manager repos --enable="{{ item }}"
+  with_items: "{{ repos }}"
+  when: status.rc is defined

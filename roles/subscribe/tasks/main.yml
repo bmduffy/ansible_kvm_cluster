@@ -1,25 +1,15 @@
 ---
 
-- name: "Register system with Red Hat"
-  command : |
-    subscription-manager register \
-        --username {{ username }} --password {{ password }}
-  register: result
-  failed_when: result.rc not in (0, 64)
+- name: "Check if '{{ inventory_hostname }}' is registered"
+  command: "subscription-manager status"
+  register: output
 
-- name: "Check subscription status"
-  shell: subscription-manager list | grep "Status:" | grep "Not Subscribed"
-  register: status
-  failed_when: status.rc not in (0, 1)
+- name: "Get the systems current status"
+  set_fact:
+      status: "{{ output.stdout_lines[3].split()[2] }}"
 
-- name: "Attach subscription pool"
-  command: subscription-manager attach --pool {{ item }}
-  with_items: "{{ pools }}"
-  when: status.rc == 0
+- debug:
+      msg: "'{{ inventory_hostname }}' current status: '{{ status }}'"
 
-- name: "Disable all repositories"
-  command: subscription-manager repos --disable="*"
-
-- name: "Enable all repos for OpenShift"
-  command: subscription-manager repos --enable="{{ item }}"
-  with_items: "{{ repos }}"
+- include: register_and_subscribe.yml
+  when: status != "Current"

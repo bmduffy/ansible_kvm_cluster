@@ -1,3 +1,6 @@
+---
+
+
 - name: "Configure RHEL 7 cluster nodes for OpenShift"
   hosts: nodes
   pre_tasks:

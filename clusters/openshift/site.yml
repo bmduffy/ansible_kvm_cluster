@@ -34,7 +34,7 @@
   hosts: nfs
   roles:
       - {role: nfs_server,
-               container_shares: ["registry", "logging", "metrics"]}
+         container_shares: ["registry", "logging", "metrics"]}
   tags: ["provision", "openshift"]
 
 - name: "Configure NFS clients"
