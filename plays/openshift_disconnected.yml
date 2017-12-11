@@ -87,7 +87,7 @@
       img_repo: "/ocp/images"
 
   roles:
-      - {role: docker, storage: "production"}
+      - {role: docker, storage: "production", block_device: "vdb"}
 
   tasks:
       - name: "Pull all required OCP containerized components"

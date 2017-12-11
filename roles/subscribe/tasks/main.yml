@@ -11,5 +11,46 @@
 - debug:
       msg: "'{{ inventory_hostname }}' current status: '{{ status }}'"
 
-- include: register_and_subscribe.yml
+- name: "Register system with Red Hat"
+  command : |
+    subscription-manager register \
+        --username {{ username }} --password {{ password }}
+  register: result
+  failed_when: result.rc not in (0, 64)
   when: status != "Current"
+
+- name: "Check subscription status"
+  shell: |
+    subscription-manager list | grep "Status:" | grep "Not Subscribed"
+  register: status
+  failed_when: status.rc not in (0, 1)
+
+- name: "Attach subscription pool"
+  command: |
+    subscription-manager attach --pool {{ item }}
+  with_items: "{{ pools }}"
+
+- name: "Query yum to see what repos are enabled"
+  shell: "yum repolist enabled"
+  register: output
+
+- name: "Init enabled repo list"
+  set_fact:
+      enabled_repos: []
+
+- name: "Compile a list of enabled repos"
+  set_fact:
+      enabled_repos: "{{ enabled_repos }} + {{ item.split()[0].split('/')[:1] }}"
+  with_items: "{{ output.stdout_lines[2:-1] | default([]) }}"
+
+- name: "Disable all repositories that are not in the prescribed list"
+  command: |
+      subscription-manager repos --disable="{{ item }}"
+  when: item not in repos
+  with_items: "{{ enabled_repos }}"
+
+- name: "Enable all repos for OCP if they are not already enabled"
+  command: |
+    subscription-manager repos --enable="{{ item }}"
+  when: item not in enabled_repos
+  with_items: "{{ repos }}"
