@@ -30,6 +30,9 @@
     subscription-manager attach --pool {{ item }}
   with_items: "{{ pools }}"
 
+- name: "Update yum metadata"
+  shell: "yum clean all && yum repolist"
+
 - name: "Query yum to see what repos are enabled"
   shell: "yum repolist enabled"
   register: output
