@@ -1,0 +1,14 @@
+---
+
+- name: "Clean '~/.ssh/known_hosts'"
+  hosts: localhost
+  connection: local
+  become: yes
+  vars:
+      user: "{{ lookup('env', 'USER') }}"
+  tasks:
+      - name: "Remove hosts from known_hosts"
+        lineinfile:
+            path: "/home/{{ user }}/.ssh/known_hosts"
+            state: absent
+            regexp: "^\\w*.{{ subdomain }}"
