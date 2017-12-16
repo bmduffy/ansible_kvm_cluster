@@ -91,30 +91,19 @@
 
   tasks:
       - name: "Pull all required OCP containerized components"
-        docker_image:
-            name: "{{ item }}"
-            tag: "{{ redhat.ocp.tag }}"
-            state: "present"
+        shell: "docker pull {{ item }}:{{ redhat.ocp.tag }}"
         with_items: "{{ redhat.ocp.images }}"
 
       - name: "Pull all additional OCP images for logging and metrics"
-        docker_image:
-            name: "{{ item }}"
-            tag: "{{ redhat.ocp_add.tag }}"
-            state: "present"
+        shell: "docker pull {{ item }}:{{ redhat.ocp_add.tag }}"
         with_items: "{{ redhat.ocp_add.images }}"
 
       - name: "Pull all extra OCP images"
-        docker_image:
-            name: "{{ item }}"
-            tag: "{{ redhat.ocp_extr.tag }}"
-            state: "present"
+        shell: "docker pull {{ item }}:{{ redhat.ocp_extr.tag }}"
         with_items: "{{ redhat.ocp_extr.images }}"
 
       - name: "Pull all S2I images"
-        docker_image:
-            name: "{{ item }}"
-            state: "present"
+        shell: "docker pull {{ item }}:{{ redhat.ocp_s2i.tag }}"
         with_items: "{{ redhat.ocp_s2i.images }}"
 
       - name: "Create directory for '{{ img_repo }}'"
