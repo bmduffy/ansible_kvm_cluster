@@ -1,0 +1,71 @@
+---
+
+# Install all necessary components on your machine to run KVM virtual clusters
+# Use generic package and service modules,
+# which should work across all versions of Linux
+
+- name: "Install KVM hypervisor on CentOS or RHEL"
+  hosts: localhost
+  connection: local
+  become: yes
+  gather_facts: yes
+  tasks:
+
+    - name: "Install/Update qemu packages"
+      package:
+          name: "{{ item }}"
+          state: latest
+      with_items: ["qemu-kvm", "qemu-img"]
+
+    - name: "Install/Update virt packages"
+      package:
+          name: "{{ item }}"
+          state: latest
+      with_items: ["virt-manager", "virt-install", "virt-viewer"]
+
+    - name: "Install/Update libvirt package"
+      package:
+          name: "libvirt"
+          state: latest
+      register: output
+
+    - name: "Output from libvirt package command"
+      set_fact:
+          package_output: "{{ output | json_query('results[*]') }}"
+
+    - name: "Check if all packages have been installed"
+      set_fact:
+          any_install: "{{ package_output | any_contain('Installed') }}"
+
+    - name: "Check if any packages have been updated"
+      set_fact:
+          any_update: "{{ package_output | any_contain('Updated') }}"
+
+    - name: "Install/Update libvirt extra packages"
+      package:
+        name: "{{ item }}"
+        state: latest
+      with_items: ["libvirt-python", "libvirt-client"]
+
+    - name: "Reload libvirtd"
+      service:
+          name: "libvirtd"
+          state: reloaded
+      when: any_update
+
+    - name: "Restart libvirtd"
+      service:
+          name: "libvirtd"
+          state: restarted
+      when: any_update
+
+    - name: "Start and enable libvirtd"
+      service:
+          name: libvirtd
+          enabled: yes
+          state: started
+      when: any_install
+
+    - name: "Reboot machine"
+      command: "shutdown --reboot"
+      when: any_install
