@@ -1,5 +1,7 @@
 ---
+
 # https://docs.openshift.com/container-platform/3.5/install_config/persistent_storage/persistent_storage_nfs.html
+
 - name: "Install NFS packages on RHEL"
   yum:
     name: "{{ pkg }}"
@@ -8,15 +10,18 @@
   loop_control:
     loop_var: pkg
   when: ansible_distribution == "Red Hat Enterprise Linux"
+
 - name: "Install NFS packages on Centos"
   yum:
     name: nfs-utils
     state: present
   when: ansible_distribution == "CentOS"
+
 - name: "Create an NFS share directory"
   file:
     path: "/home/share"
     state: directory
+
 - name: "Open ports, 111 portmapper, 2049 nfs, 20048 mountd"
   iptables:
     action: insert
@@ -27,14 +32,17 @@
   with_nested:
       - [111, 2049, 20048]
       - ["tcp", "udp"]
+
 - name: "Ensure the NFS server is started"
   systemd:
     name: nfs-server
     state: started
+
 - name: "Ensure the NFS server is enabled"
   systemd:
     name: nfs-server
     enabled: yes
+
 - name: "Create share directory"
   file:
     path: "/home/share/{{ directory }}"
@@ -45,6 +53,7 @@
   with_items: "{{ container_shares }}"
   loop_control:
     loop_var: directory
+
 - name: "Configure directories to export"
   lineinfile:
     path: "/etc/exports"
@@ -53,5 +62,6 @@
   with_items: "{{ container_shares }}"
   loop_control:
     loop_var: directory
+
 - name: "Export nfs shares"
   command: /usr/sbin/exportfs -a

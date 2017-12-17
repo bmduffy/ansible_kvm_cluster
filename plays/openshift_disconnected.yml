@@ -80,15 +80,22 @@
             state: started
             enabled: yes
 
+- name: "Configure cluster nodes to pull RPMs from yum repo server"
+  hosts: nodes
+  vars:
+      repo_server_hostname: "{{ groups['repo'][0] }}"
+  tasks:
+    - name: "Copy yum repo template to '{{ inventory_hostname }}'"
+      template:
+          src: "templates/ose.repo.j2"
+          dest: "/etc/yum.repos.d/ose.repo"
+
 - name: "Setup node as a docker registry"
   hosts: repo
-
   vars:
       img_repo: "/ocp/images"
-
   roles:
       - {role: docker, storage: "production", block_device: "vdb"}
-
   tasks:
       - name: "Pull all required OCP containerized components"
         shell: "docker pull {{ item }}:{{ redhat.ocp.tag }}"
@@ -103,7 +110,7 @@
         with_items: "{{ redhat.ocp_extr.images }}"
 
       - name: "Pull all S2I images"
-        shell: "docker pull {{ item }}:{{ redhat.ocp_s2i.tag }}"
+        shell: "docker pull {{ item }}"
         with_items: "{{ redhat.ocp_s2i.images }}"
 
       - name: "Create directory for '{{ img_repo }}'"

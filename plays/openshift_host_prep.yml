@@ -3,15 +3,7 @@
 - name: "Configure RHEL 7 cluster nodes for OpenShift"
   hosts: nodes
 
-  vars:
-      repo_server_hostname: "{{ group_vars['repo'][0].inventory_hostname }}"
-
   pre_tasks:
-
-    - name: "Copy yum repo template to '{{ inventory_hostname }}'"
-      template:
-          src: "templates/ose.repo.j2"
-          dest: "/etc/yum.repos.d/ose.repo"
 
     - name: "Install base packages on cluster nodes"
       yum:
