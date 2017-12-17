@@ -49,7 +49,7 @@
             state: directory
             owner: root
             group: root
-            mode: 0644
+            mode: 0755
             recurse: yes
 
       - name: "Restore files default SELinux security context"
