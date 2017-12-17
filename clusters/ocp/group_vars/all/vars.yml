@@ -14,6 +14,15 @@ networks:
           range:
               start: 10.10.10.2
               end: 10.10.10.254
+      dns:
+          - ipv4: "10.10.10.10"
+            aliases: ["registry", "nfs"]
+          - ipv4: "10.10.10.11"
+            aliases: ["m01"]
+          - ipv4: "10.10.10.12"
+            aliases: ["n01"]
+          - ipv4: "10.10.10.13"
+            aliases: ["n02"]
 
 nodes:
     root_password: "{{ lookup('password', '~/.private/vm/password') }}"

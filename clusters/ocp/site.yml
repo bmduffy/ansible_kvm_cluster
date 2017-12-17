@@ -66,3 +66,8 @@
 
 - include: ../../plays/teardown.yml
   tags: ["teardown"]
+
+# Update network
+
+- include: ../../plays/update_network_configs.yml
+  tags: ["update-network-configs"]

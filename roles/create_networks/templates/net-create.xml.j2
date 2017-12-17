@@ -2,6 +2,15 @@
   <name>{{ network.name }}</name>
   <forward mode='{{ network.mode }}'/>
   <domain name='{{ subdomain }}' localOnly='yes'/>
+  <dns>
+    {% for record in network.dns %}
+        <host ip='{{ record.ipv4 }}'>
+            {% for alias in record.aliases %}
+                <hostname>{{ alias }}</hostname>
+            {% endfor %}
+        </host>
+    {% endfor %}
+  </dns>
   <ip address='{{ network.gateway }}' netmask='{{ network.netmask }}'>
     <dhcp>
       <range start='{{ network.dhcp.range.start }}'
