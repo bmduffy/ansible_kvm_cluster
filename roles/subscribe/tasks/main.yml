@@ -3,6 +3,7 @@
 - name: "Check if '{{ inventory_hostname }}' is registered"
   command: "subscription-manager status"
   register: output
+  failed_when: output.rc not in (0, 1)
 
 - name: "Get the systems current status"
   set_fact:
