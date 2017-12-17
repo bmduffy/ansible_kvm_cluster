@@ -28,7 +28,7 @@
   tags: ["provision", "openshift"]
 
 - include: ../../plays/openshift_disconnected.yml
-  tags: ["provision", "openshift"]
+  tags: ["provision", "openshift", "disconnected"]
 
 - name: "Configure NFS servers"
   hosts: nfs
@@ -44,8 +44,8 @@
       - {role: nfs_client}
   tags: ["provision", "openshift", "nfs"]
 
-# - include: ../../plays/openshift_host_prep.yml
-#   tags: ["provision", "openshift", "ocp-host-prep"]
+# - include: ../../plays/openshift_node_prep.yml
+#   tags: ["provision", "openshift", "ocp-node-prep"]
 
 - name: "Unsubscribe repo node from Red Hat CDN network"
   hosts: repo

@@ -1,37 +1,29 @@
 ---
 
-- name: "Configure RHEL 7 cluster nodes for OpenShift"
-  hosts: nodes
+- name: "Install base packages on cluster nodes"
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: [
+      "gcc", "wget", "git", "bind", "bind-utils", "iptables-services",
+      "bridge-utils", "bash-completion", "python-virtualenv"]
 
-  pre_tasks:
+- name: "Ensure all packages are at their latest"
+  yum:
+    name: "*"
+    state: latest
 
-    - name: "Install base packages on cluster nodes"
-      yum:
-        name: "{{ item }}"
-        state: present
-      with_items: [
-          "gcc", "wget", "git", "bind", "bind-utils", "iptables-services",
-          "bridge-utils", "bash-completion", "python-virtualenv"]
+- name: "Install atomic openshift utils"
+  yum:
+    name: "atomic-openshift-utils"
+    state: present
 
-    - name: "Ensure all packages are at their latest"
-      yum:
-        name: "*"
-        state: latest
+- name: "Install excluder packages"
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items: [
+    "atomic-openshift-excluder", "atomic-openshift-docker-excluder" ]
 
-    - name: "Install atomic openshift utils"
-      yum:
-        name: "atomic-openshift-utils"
-        state: present
-
-    - name: "Install excluder packages"
-      yum:
-        name: "{{ item }}"
-        state: present
-      with_items: [
-        "atomic-openshift-excluder", "atomic-openshift-docker-excluder" ]
-
-    - name: "Run excluder"
-      shell: "atomic-openshift-excluder unexclude"
-
-  roles:
-    - {role: docker, storage: "production"}
+- name: "Run excluder"
+  shell: "atomic-openshift-excluder unexclude"
