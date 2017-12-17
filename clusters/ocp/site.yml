@@ -43,8 +43,8 @@
       - {role: nfs_client}
   tags: ["provision", "openshift"]
 
-- include: ../../plays/openshift_host_prep.yml
-  tags: ["provision", "openshift"]
+# - include: ../../plays/openshift_host_prep.yml
+#   tags: ["provision", "openshift"]
 
 - name: "Unsubscribe repo node from Red Hat CDN network"
   hosts: repo
@@ -55,10 +55,10 @@
     - name: "Unregistering all systems"
       command: "subscription-manager unregister"
 
+# Base Cluster TearDown:
+
 - include: ../../plays/clean_hosts.yml
   tags: ["clean-hosts", "teardown"]
-
-# Base Cluster TearDown:
 
 - include: ../../plays/shutdown.yml
   tags: ["shutdown", "teardown"]

@@ -1,0 +1,52 @@
+---
+
+# TODO: This should be a less specific location
+image_path: "/home/brian.duffy/libvirt/images"
+
+subdomain: "test.cluster.local"
+
+networks:
+    - name: "test"
+      mode: "nat"
+      gateway: 20.10.10.1
+      netmask: 255.255.255.0
+      dhcp:
+          range:
+              start: 20.10.10.2
+              end: 20.10.10.254
+
+nodes:
+    root_password: "{{ lookup('password', '~/.private/vm/password') }}"
+    timezone: "Europe/Dublin"
+    keymap:   "ie"
+    ssh_key:  "/home/brian.duffy/.ssh/id_rsa.pub"
+    base_image: "{{ image_path }}/centos7.qcow2"
+    os_variant: "centos7"
+
+    instances:
+
+        - name: "n01.{{ subdomain }}"
+          host_groups: ["cluster", "nodes"]
+          cpus: 1
+          memory: 1024
+          nics:
+              - network: "openshift"
+                model: "virtio"
+                mac: "52:54:00:00:00:20"
+                ipv4: "10.10.10.12"
+          disks:
+              - path: "{{ image_path }}/n01.{{ subdomain }}-disk1.qcow2"
+                format: "qcow2"
+
+        - name: "n02.{{ subdomain }}"
+          host_groups: ["cluster", "nodes"]
+          cpus: 1
+          memory: 1024
+          nics:
+              - network: "openshift"
+                model: "virtio"
+                mac: "52:54:00:00:00:10"
+                ipv4: "20.10.10.13"
+          disks:
+              - path: "{{ image_path }}/n02.{{ subdomain }}-disk1.qcow2"
+                format: "qcow2"
