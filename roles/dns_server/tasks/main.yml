@@ -38,12 +38,7 @@
 - name: "Copy /etc/hosts"
   template:
     src: "hosts.j2"
-    dest: "/etc/hosts"
-
-- name: "Copy /etc/resolv.conf"
-  template:
-    src: "resolv.conf.j2"
-    dest: "/etc/resolv.conf"
+    dest: "/etc/dnsmasq_static_hosts.conf"
 
 - name: "Enable and start dnsmasq"
   systemd:

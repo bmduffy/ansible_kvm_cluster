@@ -7,7 +7,22 @@
 
 - name: "Configure all nodes to use dns"
   hosts: nodes,registry,nfs,yum
+  vars:
+      dns_ip: 10.10.10.10
   tasks:
-      - name: "Ensure node points to local dns"
-        debug:
-            msg: "not sure how to fudge this yet"
+
+      - name: "Copy custom resolv"
+        template:
+            src: "resolv.conf.custom.j2"
+            dest: "/etc/resolv.conf.custom"
+
+      - name: "Create NetworkManager dispatcher file"
+        template:
+            src: "15-resolv.j2"
+            dest: "/etc/NetworkManager/dispatcher.d/15-resolv"
+            mode: 755
+
+      - name: "Restart nework manager"
+        systemd:
+            name: "NetworkManager"
+            state: restart

@@ -15,18 +15,18 @@
   shell: |
     reposync --gpgcheck -lm \
              --repoid={{ item }} --download_path={{ local_rpm_repos }}
-  args:
-      creates: "{{ local_rpm_repos }}/{{ item }}/Packages"
   with_items: "{{ remote_rpm_repos }}"
+  # args:
+  #     creates: "{{ local_rpm_repos }}/{{ item }}/Packages"
 
 - name: "Create yum repository '{{ inventory_hostname }}'"
   shell: |
     createrepo -v {{ local_rpm_repos }}/{{ item }}  \
                -o {{ local_rpm_repos }}/{{ item }}
-  args:
-       creates: "{{ local_rpm_repos }}/{{ item }}/repodata"
   with_items: "{{ remote_rpm_repos }}"
-
+  # args:
+  #      creates: "{{ local_rpm_repos }}/{{ item }}/repodata"
+  
 - name: "Recursively set permissions on repo data '{{ local_rpm_repos }}'"
   file:
       path: "{{ local_rpm_repos }}"

@@ -9,6 +9,9 @@
 - include: ../../plays/provision.yml
   tags: ["provision"]
 
+- include: ../../plays/hostfile.yml
+  tags: ["provision", "hostfile"]
+  
 # TODO:
 # Work Around; There is currently no xfs support for virt-resize
 # so need to grow the root files system manually
@@ -21,9 +24,6 @@
 
 - include: ../../plays/startup.yml
   tags: ["startup"]
-
-- include: ../../plays/hostfile.yml
-  tags: ["provision", "hostfile"]
 
 - include: ../../plays/yum_repo.yml
   tags: ["provision", "ocp", "yum"]
