@@ -1,0 +1,40 @@
+---
+
+- name: "Install packages, yum-utils provides reposync"
+  yum:
+      name: "{{ item }}"
+      state: present
+  with_items: ["yum-utils", "createrepo", "git"]
+
+- name: "Ensure '{{ local_rpm_repos }}' exists"
+  file:
+      path: "{{ local_rpm_repos }}"
+      state: directory
+
+- name: "Get rpm packages '{{ inventory_hostname }}'"
+  shell: |
+    reposync --gpgcheck -lm \
+             --repoid={{ item }} --download_path={{ local_rpm_repos }}
+  args:
+      creates: "{{ local_rpm_repos }}/{{ item }}/Packages"
+  with_items: "{{ remote_rpm_repos }}"
+
+- name: "Create yum repository '{{ inventory_hostname }}'"
+  shell: |
+    createrepo -v {{ local_rpm_repos }}/{{ item }}  \
+               -o {{ local_rpm_repos }}/{{ item }}
+  args:
+       creates: "{{ local_rpm_repos }}/{{ item }}/repodata"
+  with_items: "{{ remote_rpm_repos }}"
+
+- name: "Recursively set permissions on repo data '{{ local_rpm_repos }}'"
+  file:
+      path: "{{ local_rpm_repos }}"
+      state: directory
+      owner: root
+      group: root
+      mode: 0755
+      recurse: yes
+
+- name: "Restore files default SELinux security context"
+  command: "restorecon -vR /var/www/html"

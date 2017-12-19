@@ -21,6 +21,10 @@
     loop_var: network
   when: network.name not in net_names
 
+- name: "Get first network"
+  set_fact:
+      network: "{{ networks[0] }}"
+
 - name: "Start networks so it is activated"
   virt_net:
     name: "{{ item.name }}"
@@ -48,11 +52,11 @@
     state: touch
   become: yes
 
-- name: "Add servers to dnsmaq in NetworkManager"
+- name: "Add subnet to dnsmaq in NetworkManager"
   lineinfile:
     path: "{{ libvirt_dnsmasq }}"
-    regexp: "^server=/{{ subdomain }}/{{ networks[0].gateway }}"
-    line: "server=/{{ subdomain }}/{{ networks[0].gateway }}"
+    regexp: "^server=/{{ domain }}/{{ networks[0].gateway }}"
+    line: "server=/{{ domain }}/{{ networks[0].gateway }}"
     state: present
   become: yes
 

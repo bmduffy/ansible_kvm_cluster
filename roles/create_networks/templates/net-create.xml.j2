@@ -1,20 +1,19 @@
 <network>
-  <name>{{ network.name }}</name>
-  <forward mode='{{ network.mode }}'/>
-  <domain name='{{ subdomain }}' localOnly='yes'/>
-  <dns>
-    {% for record in network.dns %}
-        <host ip='{{ record.ipv4 }}'>
-            {% for alias in record.aliases %}
-                <hostname>{{ alias }}</hostname>
-            {% endfor %}
+    <name>{{ network.name }}</name>
+    <forward mode='{{ network.mode }}'/>
+    <domain name='{{ domain }}'/>
+    <dns>
+        <forwarder addr="8.8.8.8"/>
+        <forwarder addr="8.8.4.4"/>
+        {% for instance in nodes.instances %}
+        <host ip='{{ instance.nics[0].ipv4 }}'>
+            <hostname>{{ instance.name }}</hostname>
         </host>
-    {% endfor %}
-  </dns>
-  <ip address='{{ network.gateway }}' netmask='{{ network.netmask }}'>
-    <dhcp>
-      <range start='{{ network.dhcp.range.start }}'
-             end='{{ network.dhcp.range.end }}'/>
-    </dhcp>
-  </ip>
+        {% endfor %}
+    </dns>
+    <ip address='{{ network.gateway }}' netmask='{{ network.netmask }}'>
+        <dhcp>
+            <range start='{{ network.dhcp.range.start }}' end='{{ network.dhcp.range.end }}'/>
+        </dhcp>
+    </ip>
 </network>

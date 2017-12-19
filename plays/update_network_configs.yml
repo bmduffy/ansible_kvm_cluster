@@ -20,3 +20,17 @@
         when: item.name in net_names
   roles:
       - {role: create_networks}
+  tasks:
+      - name: "Assign instances static IPs for NICs via MAC address"
+        command: |
+          {% for nic in instance.nics %}
+          {% if nic.ipv4 is defined %}
+          virsh net-update {{ nic.network }} \
+            add ip-dhcp-host '<host mac="{{ nic.mac }}" ip="{{ nic.ipv4 }}"/>' \
+            --live --config
+          {% endif %}
+          {% endfor %}
+        with_items: "{{ nodes.instances }}"
+        loop_control:
+            loop_var: "instance"
+        become: yes

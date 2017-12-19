@@ -8,6 +8,10 @@ for testing and learning purposes.
 
 ## Minimum System Requirments
 
+## Get Base Images
+
+`osinfo-query os`
+
 ## Getting Started
 
 The following will get you all the software you need to start creating

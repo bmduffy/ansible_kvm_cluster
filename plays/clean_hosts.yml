@@ -11,4 +11,4 @@
         lineinfile:
             path: "/home/{{ user }}/.ssh/known_hosts"
             state: absent
-            regexp: "^\\w*.{{ subdomain }}"
+            regexp: "^\\w*.{{ domain }}"

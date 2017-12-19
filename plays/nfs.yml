@@ -1,0 +1,12 @@
+---
+
+- name: "Configure NFS servers"
+  hosts: nfs
+  roles:
+      - {role: nfs_server,
+         container_shares: ["test"]}
+
+- name: "Configure NFS clients"
+  hosts: nodes,registry
+  roles:
+      - {role: nfs_client}

@@ -1,0 +1,10 @@
+---
+    
+- name: "Unsubscribe repo node from Red Hat CDN network"
+  hosts: repo
+  tags: ["teardown"]
+  tasks:
+    - name: "Removing all subscriptions"
+      command: "subscription-manager remove --all"
+    - name: "Unregistering all systems"
+      command: "subscription-manager unregister"

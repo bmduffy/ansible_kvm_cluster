@@ -9,13 +9,6 @@
   with_items: ["nfs-utils", "nfs-utils-lib"]
   loop_control:
     loop_var: pkg
-  when: ansible_distribution == "Red Hat Enterprise Linux"
-
-- name: "Install NFS packages on Centos"
-  yum:
-    name: nfs-utils
-    state: present
-  when: ansible_distribution == "CentOS"
 
 - name: "Create an NFS share directory"
   file:

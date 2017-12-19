@@ -1,8 +1,0 @@
----
-
-- name: "Configure RHEL 7 cluster nodes for OpenShift"
-  hosts: nodes
-  pre_tasks:
-    - include: ./openshift_host_prep.yml
-  roles:
-    - {role: docker, storage: "production"}

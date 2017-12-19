@@ -1,0 +1,7 @@
+---
+
+- name: "Configure nodes OCP will be installed on"
+  hosts: nodes, registry
+  roles:
+      - {role: ocp_prep}
+      - {role: docker, storage: "production"}

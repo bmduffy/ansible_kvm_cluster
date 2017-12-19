@@ -1,0 +1,24 @@
+---
+
+- name: "Setup node as a yum server"
+  hosts: yum
+  roles:
+      - {role: subscribe,
+          username: "{{ redhat.username }}",
+          password: "{{ redhat.password }}",
+          pools: ["{{ redhat.subscription.pool }}"],
+          repos: "{{ redhat.rpms.repos }}"}
+      - {role: disconnected,
+          remote_rpm_repos: "{{ redhat.rpms.repos }}",
+          local_rpm_repos: "/var/www/html/repos"}
+      - {role: httpd}
+
+- name: "Configure cluster nodes to pull RPMs from yum repo server"
+  hosts: nodes,registry,dns
+  vars:
+      repo_server_hostname: "{{ groups['yum'][0] }}"
+  tasks:
+    - name: "Copy yum repo template to '{{ inventory_hostname }}'"
+      template:
+          src: "templates/ose.repo.j2"
+          dest: "/etc/yum.repos.d/ose.repo"

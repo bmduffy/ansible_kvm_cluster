@@ -1,0 +1,25 @@
+---
+- name: "Set this server up as an Apache server"
+  yum:
+      name: "{{ item }}"
+      state: present
+  with_items: ["httpd", "firewalld"]
+
+- name: "Enable and start firewalld"
+  systemd:
+      name: "firewalld"
+      state: started
+      enabled: yes
+
+- name: "Add firewall rules for http requests"
+  firewalld:
+      service: http
+      permanent: true
+      state: enabled
+      immediate: true
+
+- name: "Enable and start httpd Apache server"
+  systemd:
+      name: "httpd"
+      state: started
+      enabled: yes

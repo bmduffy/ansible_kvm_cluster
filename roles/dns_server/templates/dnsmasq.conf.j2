@@ -1,0 +1,11 @@
+# http://www.thekelleys.org.uk/dnsmasq/docs/dnsmasq-man.html
+
+port=53
+domain-needed
+bogus-priv
+strict-order
+interface=eth0
+cache-size=150
+log-queries
+conf-file=/etc/dnsmasq.conf
+conf-dir=/etc/dnsmasq.d,.rpmnew,.rpmsave,.rpmorig

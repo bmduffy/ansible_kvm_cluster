@@ -10,6 +10,6 @@
   roles:
     - {role: compile_host_groups,
         instances: "{{ nodes.instances }}"}
-    - {role: openshift_hostfile,
+    - {role: hostfile,
         path: "{{ cluster_source_path }}",
         host_groups: "{{ host_group_map }}" }

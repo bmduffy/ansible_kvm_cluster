@@ -1,0 +1,13 @@
+---
+
+- name: "Configure DNS servers"
+  hosts: dns
+  roles:
+      - {role: dns_server}
+
+- name: "Configure all nodes to use dns"
+  hosts: nodes,registry,nfs,yum
+  tasks:
+      - name: "Ensure node points to local dns"
+        debug:
+            msg: "not sure how to fudge this yet"
