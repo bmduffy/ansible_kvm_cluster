@@ -18,14 +18,14 @@
 
 - name: "Disable PEERDNS"
   lineinfile:
-    path: "/etc/sysconfi/network-scripts/ifcfg-eth0"
+    path: "/etc/sysconfig/network-scripts/ifcfg-eth0"
     regexp: '^PEERDNS='
     line: 'PEERDNS="no"'
     state: present
 
 - name: "Thoroughly turn off NetworkManager Control"
   lineinfile:
-    path: "/etc/sysconfi/network-scripts/ifcfg-eth0"
+    path: "/etc/sysconfig/network-scripts/ifcfg-eth0"
     regexp: '^NM_CONTROLLED='
     line: 'NM_CONTROLLED="no"'
     state: present

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+function check_repos {}
+    repos="{{ local_rpm_repos }}"
+    pkgs=$(find ${repos} -name "*.rpm" | wc -l)
+
+    echo "${pkgs} packages downloaded ..."
+    echo
+
+    dirs=$(ls -d ${repos}/*)
+
+    for x in ${dirs}
+    do
+        npkgs=$(find ${x} -name "*.rpm" | wc -l)
+        repo_name=$(echo "${x}" | rev | cut -d'/' -f1 | rev)
+        echo "${repo_name} : ${npkgs} pkgs"
+    done
+}
+
+check_repos

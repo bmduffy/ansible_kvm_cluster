@@ -11,7 +11,7 @@
 
 - include: ../../plays/hostfile.yml
   tags: ["provision", "hostfile"]
-  
+
 # TODO:
 # Work Around; There is currently no xfs support for virt-resize
 # so need to grow the root files system manually
@@ -53,5 +53,5 @@
 
 # Update network
 
-- include: ../../plays/update_network_configs.yml
-  tags: ["update-network-configs"]
+- include: ../../plays/update_networks.yml
+  tags: ["update-networks"]

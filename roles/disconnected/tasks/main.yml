@@ -11,22 +11,24 @@
       path: "{{ local_rpm_repos }}"
       state: directory
 
+- name: "Copy a utility script to ther yum server"
+  template:
+      src: "repo_checker.sh.j2"
+      dest: "/root/repo_checker.sh"
+      mode: 0744
+      
 - name: "Get rpm packages '{{ inventory_hostname }}'"
   shell: |
     reposync --gpgcheck -lm \
              --repoid={{ item }} --download_path={{ local_rpm_repos }}
   with_items: "{{ remote_rpm_repos }}"
-  # args:
-  #     creates: "{{ local_rpm_repos }}/{{ item }}/Packages"
 
 - name: "Create yum repository '{{ inventory_hostname }}'"
   shell: |
     createrepo -v {{ local_rpm_repos }}/{{ item }}  \
                -o {{ local_rpm_repos }}/{{ item }}
   with_items: "{{ remote_rpm_repos }}"
-  # args:
-  #      creates: "{{ local_rpm_repos }}/{{ item }}/repodata"
-  
+
 - name: "Recursively set permissions on repo data '{{ local_rpm_repos }}'"
   file:
       path: "{{ local_rpm_repos }}"
