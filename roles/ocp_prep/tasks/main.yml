@@ -1,17 +1,20 @@
 ---
 
+- name: "Clear out old transactions"
+  shell: "yum-complete-transaction --cleanup-only"
+
 - name: "Install base packages on cluster nodes"
   yum:
     name: "{{ item }}"
     state: present
   with_items: [
-      "gcc", "wget", "git", "bind", "bind-utils", "iptables-services",
+      "wget", "git", "net-tools", "bind-utils", "iptables-services",
       "bridge-utils", "bash-completion", "python-virtualenv"]
 
-- name: "Ensure all packages are at their latest"
-  yum:
-    name: "*"
-    state: latest
+# - name: "Ensure all packages are at their latest"
+#   yum:
+#     name: "*"
+#     state: latest
 
 - name: "Install atomic openshift utils"
   yum:

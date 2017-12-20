@@ -5,12 +5,6 @@
       name: "dnsmasq"
       state: present
 
-- name: "Disable NetworkManager"
-  systemd:
-      name: "NetworkManager"
-      state: stopped
-      enabled: no
-
 - name: "Remove NetworkManager"
   yum:
       name: "NetworkManager"
@@ -43,10 +37,10 @@
 - name: "Enable and start dnsmasq"
   systemd:
       name: "dnsmasq"
-      state: start
+      state: started
       enabled: yes
 
-- name: "Enable and start dnsmasq"
+- name: "Restart network"
   systemd:
       name: "network"
-      state: restart
+      state: restarted

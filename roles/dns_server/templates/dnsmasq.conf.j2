@@ -23,19 +23,19 @@ server=8.8.8.8
 
 # Our local domain, queries in these domains are answered
 # from /etc/hosts or the static-hosts files.
-local=/{{ domain }}/
+local=/{{ domain }}/master.ocp.cluster
 
 # This is your local domain name. It will tell the DHCP server which host to
 # give out IP addresses for.
 domain={{ domain }}
 
 # So we can see our local hosts via our home domain without having to repeatedly specify the domain in our /etc/hosts file
-expand_hosts
+expand-hosts
 
 # This options stops dnsmasq using the local /etc/hosts file as a source for lookups.
 no-hosts
 
-Force dnsmasq to use this file for lookups. It is in the same format as /etc/hosts.
+#Force dnsmasq to use this file for lookups. It is in the same format as /etc/hosts.
 addn-hosts=/etc/dnsmasq_static_hosts.conf
 
 log-queries

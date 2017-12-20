@@ -14,11 +14,11 @@
       - {role: httpd}
 
 - name: "Configure cluster nodes to pull RPMs from yum repo server"
-  hosts: nodes,registry,dns
+  hosts: nodes,registry,dns,nfs
   vars:
       repo_server_hostname: "{{ groups['yum'][0] }}"
   tasks:
-    - name: "Copy yum repo template to '{{ inventory_hostname }}'"
+    - name: "Copy yum repo template to host"
       template:
           src: "templates/ose.repo.j2"
           dest: "/etc/yum.repos.d/ose.repo"

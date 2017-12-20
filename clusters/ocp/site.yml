@@ -31,8 +31,8 @@
 - include: ../../plays/dns.yml
   tags: ["provision", "ocp", "dns"]
 
-# - include: ../../plays/nfs.yml
-#   tags: ["provision", "ocp", "nfs"]
+- include: ../../plays/nfs.yml
+  tags: ["provision", "ocp", "nfs"]
 
 - include: ../../plays/ocp_prep.yml
   tags: ["provision", "ocp", "prep"]
