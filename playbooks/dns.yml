@@ -1,0 +1,48 @@
+---
+
+- name: "Configure DNS servers"
+  hosts: dns
+  roles:
+      - {role: dns_server}
+
+- name: "Configure all nodes to use dns"
+  hosts: nodes,registry,nfs,yum
+  vars:
+      dns_ip: "{{ networks[0].dns }}"
+  tasks:
+      - name: "Disable PEERDNS"
+        lineinfile:
+          path: "/etc/sysconfig/network-scripts/ifcfg-eth0"
+          regexp: '^PEERDNS='
+          line: 'PEERDNS="no"'
+          state: present
+
+      - name: "Thoroughly turn off NetworkManager Control"
+        lineinfile:
+          path: "/etc/sysconfig/network-scripts/ifcfg-eth0"
+          regexp: '^NM_CONTROLLED='
+          line: 'NM_CONTROLLED="no"'
+          state: present
+
+    #   - name: "Copy custom resolv"
+    #     template:
+    #         src: "resolv.conf.custom.j2"
+    #         dest: "/etc/resolv.conf.custom"
+    #   - name: "Create NetworkManager dispatcher file"
+    #     template:
+    #         src: "15-resolv.j2"
+    #         dest: "/etc/NetworkManager/dispatcher.d/15-resolv"
+    #         mode: 0755
+
+      - name: "Restart network manager"
+        systemd:
+            name: "NetworkManager"
+            state: restarted
+
+- name: "Install network tools on all nodes"
+  hosts: all
+  tasks:
+      - name: "Install bind-utils"
+        yum:
+            name: "bind-utils"
+            state: present

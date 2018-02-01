@@ -6,6 +6,9 @@
 # - A procedurally described host network
 # - Activate local DNS to resolve host and guest FQDN via NetworkManager
 
+- include: ../../plays/hostfile.yml
+  tags: ["provision", "hostfile"]
+
 - include: ../../plays/provision.yml
   tags: ["provision"]
 

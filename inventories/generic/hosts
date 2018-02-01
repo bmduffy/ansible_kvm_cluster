@@ -1,0 +1,19 @@
+
+node1 vcpus=1 memory=1024 nics=['eth0', 'eth1']
+node2 vcpus=1 memory=1024 nics=['eth0', 'eth1']
+node3 vcpus=1 memory=1024 nics=['eth0', 'eth1']
+node4 vcpus=1 memory=1024 nics=['eth0', 'eth1']
+node5 vcpus=1 memory=1024 nics=['eth0', 'eth1']
+node6 vcpus=1 memory=1024 nics=['eth0', 'eth1']
+
+[dev:children]
+node1
+node2
+
+[int:children]
+node3
+node4
+
+[prod:children]
+node5
+node6

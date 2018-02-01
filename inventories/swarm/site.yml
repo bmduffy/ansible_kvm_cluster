@@ -1,0 +1,57 @@
+---
+
+# Base Cluster Provision:
+# - Review `./group_vars/all/vars.yml`
+# - A set of procedurally described VMs
+# - A procedurally described host network
+# - Activate local DNS to resolve host and guest FQDN via NetworkManager
+
+- include: ../../plays/provision.yml
+  tags: ["provision"]
+
+- include: ../../plays/hostfile.yml
+  tags: ["provision", "hostfile"]
+
+# TODO:
+# Work Around; There is currently no xfs support for virt-resize
+# so need to grow the root files system manually
+- name: "Workaround virt-resize XFS bug"
+  hosts: all
+  tags: ["provision"]
+  tasks:
+      - name: "Make sure the root device is filling the disk"
+        command: "xfs_growfs -d /dev/vda1"
+
+- include: ../../plays/startup.yml
+  tags: ["startup"]
+
+- include: ../../plays/yum_repo.yml
+  tags: ["provision", "ocp", "yum"]
+
+- include: ../../plays/dns.yml
+  tags: ["provision", "ocp", "dns"]
+
+- include: ../../plays/nfs.yml
+  tags: ["provision", "ocp", "nfs"]
+
+- include: ../../plays/ocp_prep.yml
+  tags: ["provision", "ocp", "prep"]
+
+# Base Cluster TearDown:
+
+- include: ../../plays/unsubscribe.yml
+  tags: ["teardown"]
+
+- include: ../../plays/clean_hosts.yml
+  tags: ["clean-hosts", "teardown"]
+
+- include: ../../plays/shutdown.yml
+  tags: ["shutdown", "teardown"]
+
+- include: ../../plays/teardown.yml
+  tags: ["teardown"]
+
+# Update network
+
+- include: ../../plays/update_networks.yml
+  tags: ["update-networks"]
