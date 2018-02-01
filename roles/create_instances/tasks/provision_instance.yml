@@ -32,8 +32,7 @@
 - name: "Resize boot disk and expand root partition"
   shell: |
     qemu-img resize {{ boot_disk }} {{ instance.disks[0].size }}G && \
-    virt-resize \
-        --expand /dev/sda1 {{ nodes.base_image }} {{ boot_disk }}
+    virt-resize --expand /dev/sda1 {{ nodes.base_image }} {{ boot_disk }}
   when: actual_boot_disk_size < desired_boot_disk_size
 
 - name: "Generate host prep script"
