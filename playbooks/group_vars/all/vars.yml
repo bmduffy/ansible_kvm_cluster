@@ -1,0 +1,19 @@
+---
+
+# Common variables get picked up here
+# Can be overridden at the inventory level
+
+timezone: "Europe/Dublin"
+keymap:   "ie"
+
+# Store secret data with `passwordstore`
+#
+# Setup
+#
+# Add data to the passwordstore
+# `>> pass insert vm/password`
+
+cluster_image_path:    "{{ lookup('passwordstore', 'vm/images')   }}"
+cluster_data_path:     "{{ lookup('passwordstore',  'vm/data')    }}"
+cluster_root_password: "{{ lookup('passwordstore', 'vm/password') }}"
+cluster_ssh_key:       "{{ lookup('passwordstore', 'vm/sshkey')   }}"

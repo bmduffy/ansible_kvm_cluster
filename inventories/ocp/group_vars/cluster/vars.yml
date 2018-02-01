@@ -1,8 +1,5 @@
 ---
 
-# TODO: This should be a less specific location
-image_path: "/home/brian.duffy/libvirt/images"
-
 domain: "ocp.cluster"
 
 networks:
@@ -16,18 +13,11 @@ networks:
               start: 10.10.10.2
               end: 10.10.10.254
       dns: 10.10.10.10
-      
-nodes:
 
-    root_password: "{{ lookup('password', '~/.private/vm/password') }}"
-    timezone: "Europe/Dublin"
-    keymap:   "ie"
-    ssh_key:  "/home/brian.duffy/.ssh/id_rsa.pub"
+nodes:
     base_image: "{{ image_path }}/rhel-server-7.4-x86_64-kvm.qcow2"
     os_variant: "rhel7"
-
     instances:
-
         - name: "dns.{{ domain }}"
           host_groups: ["cluster", "dns"]
           cpus: 1
@@ -40,7 +30,6 @@ nodes:
           disks:
               - path: "{{ image_path }}/dns-disk1.qcow2"
                 format: "qcow2"
-
         - name: "yum.{{ domain }}"
           host_groups: ["cluster", "yum"]
           cpus: 1
@@ -54,7 +43,6 @@ nodes:
               - path: "{{ image_path }}/yum-disk1.qcow2"
                 format: "qcow2"
                 size: 100
-
         - name: "nfs.{{ domain }}"
           host_groups: ["cluster", "nfs"]
           cpus: 1
@@ -68,7 +56,6 @@ nodes:
               - path: "{{ image_path }}nfs-disk1.qcow2"
                 format: "qcow2"
                 size: 60
-
         - name: "master.{{ domain }}"
           host_groups: ["cluster", "masters", "nodes"]
           cpus: 2
@@ -84,7 +71,6 @@ nodes:
               - path: "{{ image_path }}/master-disk2.qcow2"
                 format: "qcow2"
                 size: 20
-
         - name: "node.{{ domain }}"
           host_groups: ["cluster", "nodes"]
           cpus: 1
@@ -100,7 +86,6 @@ nodes:
               - path: "{{ image_path }}/node-disk2.qcow2"
                 format: "qcow2"
                 size: 20
-
         - name: "registry.{{ domain }}"
           host_groups: ["cluster", "registry"]
           cpus: 2
@@ -118,10 +103,10 @@ nodes:
                 size: 60
 
 redhat:
-    username: "{{ lookup('file', '~/.private/redhat/username')}}"
-    password: "{{ lookup('password', '~/.private/redhat/password') }}"
+    username: "{{ lookup('passwordstore', 'redhat/username')}}"
+    password: "{{ lookup('passwordstore', 'redhat/password') }}"
     subscription:
-        pool: "{{ lookup('file', '~/.private/redhat/ocp_subscription_pool_id') }}"
+        pool: "{{ lookup('passwordstore', 'redhat/ocp_subscription_pool_id') }}"
     rpms:
         repos:
         - "rhel-7-server-rpms"

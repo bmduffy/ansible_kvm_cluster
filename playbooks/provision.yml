@@ -6,6 +6,8 @@
   connection: local
   environment:
     LIBGUESTFS_BACKEND: "direct"
+    # LIBGUESTFS_DEBUG: 1
+    # LIBGUESTFS_TRACE: 1
   roles:
     - {role: create_networks}
     - {role: create_instances}
