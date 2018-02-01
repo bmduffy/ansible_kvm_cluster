@@ -1,52 +1,54 @@
 ---
 
-# TODO: This should be a less specific location
-image_path: "/home/brian.duffy/libvirt/images"
-
-subdomain: "test.cluster.local"
-
+image_path: "{{ lookup('passwordstore', 'vm/images') }}"
+domain: "test.cluster.local"
 networks:
-    - name: "test"
+    - name: "test.eth0"
       mode: "nat"
-      gateway: 20.10.10.1
+      gateway: 20.0.0.1
       netmask: 255.255.255.0
       dhcp:
           range:
-              start: 20.10.10.2
-              end: 20.10.10.254
-
+              start: 20.0.0.2
+              end: 20.0.0.254
 nodes:
-    root_password: "{{ lookup('password', '~/.private/vm/password') }}"
+    root_password: "{{ lookup('passwordstore', 'vm/password') }}"
     timezone: "Europe/Dublin"
     keymap:   "ie"
-    ssh_key:  "/home/brian.duffy/.ssh/id_rsa.pub"
-    base_image: "{{ image_path }}/centos7.qcow2"
-    os_variant: "centos7"
-
+    ssh_key:  "{{ lookup('passwordstore', 'vm/sshkey') }}"
+    base_image: "{{ image_path }}/CentOS-7-x86_64-GenericCloud.qcow2"
+    os_variant: "centos7.0"
     instances:
-
-        - name: "n01.{{ subdomain }}"
+        - name: "node1"
           host_groups: ["cluster", "nodes"]
           cpus: 1
           memory: 1024
           nics:
-              - network: "openshift"
+              - network: "test.eth0"
                 model: "virtio"
                 mac: "52:54:00:00:00:20"
-                ipv4: "10.10.10.12"
+                ipv4: "20.0.0.12"
           disks:
-              - path: "{{ image_path }}/n01.{{ subdomain }}-disk1.qcow2"
-                format: "qcow2"
-
-        - name: "n02.{{ subdomain }}"
+              - format: "qcow2"
+        - name: "node2"
           host_groups: ["cluster", "nodes"]
           cpus: 1
           memory: 1024
           nics:
-              - network: "openshift"
+              - network: "test.eth0"
                 model: "virtio"
-                mac: "52:54:00:00:00:10"
-                ipv4: "20.10.10.13"
+                mac: "52:54:00:00:00:21"
+                ipv4: "20.0.0.13"
           disks:
-              - path: "{{ image_path }}/n02.{{ subdomain }}-disk1.qcow2"
-                format: "qcow2"
+              - format: "qcow2"
+        - name: "node3"
+          host_groups: ["cluster", "nodes"]
+          cpus: 1
+          memory: 1024
+          nics:
+              - network: "test.eth0"
+                model: "virtio"
+                mac: "52:54:00:00:00:22"
+                ipv4: "20.0.0.14"
+          disks:
+              - format: "qcow2"

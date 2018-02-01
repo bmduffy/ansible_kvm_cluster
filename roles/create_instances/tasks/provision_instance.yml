@@ -4,9 +4,13 @@
 # https://docs.openstack.org/image-guide/modify-images.html
 # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-guest_virtual_machine_disk_access_with_offline_tools-virt_resize_resizing_guest_virtual_machines_offline
 
+- name: "Instance Fully Qualified Domain Name"
+  set_fact:
+      fqdn: "{{ instance.name }}.{{ domain }}"
+
 - name: "Get boot disk path ..."
   set_fact:
-      boot_disk : "{{ instance.disks[0].path }}"
+      boot_disk : "{{ image_path }}/{{ fqdn }}.disk.1"
 
 - name: "Copy base image disk for '{{ instance.name }}'"
   command: "cp {{ nodes.base_image }} {{ boot_disk }}"
@@ -56,11 +60,11 @@
       --ram {{ instance.memory }} \
       --vcpus {{ instance.cpus }} \
       --os-variant {{ nodes.os_variant }} \
-      {% for disk in instance.disks %}
-      {% if disk.size is not defined %}
-      --disk path={{ disk.path }},format={{ disk.format }} \
+      {% for d in instance.disks %}
+      {% if d.size is not defined %}
+      --disk path={{ image_path }}/{{ fqdn }}.disk.{{ loop.index }},format={{ d.format }} \
       {% else %}
-      --disk path={{ disk.path }},format={{ disk.format }},size={{ disk.size }}
+      --disk path={{ image_path }}/{{ fqdn }}.disk.{{ loop.index }},format={{ d.format }},size={{ d.size }}
       {% endif %}
       {% endfor %}
       {% for nic in instance.nics %}
