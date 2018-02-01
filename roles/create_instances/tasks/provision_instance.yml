@@ -4,7 +4,7 @@
 # https://docs.openstack.org/image-guide/modify-images.html
 # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-guest_virtual_machine_disk_access_with_offline_tools-virt_resize_resizing_guest_virtual_machines_offline
 
-- name: "Instance Fully Qualified Domain Name"
+- name: "Instance Fully Qualified Domain Name (FQDN)"
   set_fact:
       fqdn: "{{ instance.name }}.{{ domain }}"
 

@@ -10,7 +10,7 @@ for testing and learning purposes.
 
 ## Get Base Images
 
-`osinfo-query os`
+Use `osinfo-query os` to see a list of all supported OSs.
 
 ## Getting Started
 
