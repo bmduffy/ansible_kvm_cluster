@@ -13,7 +13,7 @@
     state: present
 
 # configure docker storage
-- include: docker_storage_setup.yml
+- import_tasks: docker_storage_setup.yml
   when: storage == "production"
 
 - name: "Restart docker servce and ensure it is enabled"

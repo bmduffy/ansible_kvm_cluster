@@ -22,18 +22,18 @@
       with_items: "{{ nodes.instances }}"
       when: item.name in vm_names
 
+    - name: "Find a list of VM disks for this cluster"
+      command: |
+          find {{ image_path }} -name "*.{{ domain }}.disk.*"
+      register: output
+
     - name: "Gather facts about VM disks"
       set_fact:
-        delete_disks: []
-
-    - name: "Compile list of disks to delete"
-      set_fact:
-        delete_disks: "{{ delete_disks }} + {{ item.disks }}"
-      with_items: "{{ nodes.instances }}"
+        delete_disks: "{{ output.stdout_lines }}"
 
     - name: "Clean up all the disks"
       file:
-        path: "{{ item.path }}"
+        path: "{{ item }}"
         state: absent
       with_items: "{{ delete_disks }}"
 

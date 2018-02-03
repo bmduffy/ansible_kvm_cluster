@@ -95,7 +95,7 @@
   vars:
       img_repo: "/ocp/images"
   pre_tasks:
-      - include: ./openshift_host_prep.yml
+      - import_playbook: ./openshift_host_prep.yml
   roles:
       - {role: docker, storage: "production", block_device: "vdb"}
   tasks:

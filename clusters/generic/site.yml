@@ -6,17 +6,17 @@
 # - A procedurally described host network
 # - Activate local DNS to resolve host and guest FQDN via NetworkManager
 
-- include: ../../playbooks/provision.yml
+- import_playbook: ../../playbooks/provision.yml
   tags: ["provision"]
 
-- include: ../../playbooks/startup.yml
+- import_playbook: ../../playbooks/startup.yml
   tags: ["startup"]
 
-- include: ../../playbooks/clean_hosts.yml
+- import_playbook: ../../playbooks/clean_hosts.yml
   tags: ["clean-hosts", "teardown"]
 
-- include: ../../playbooks/shutdown.yml
+- import_playbook: ../../playbooks/shutdown.yml
   tags: ["shutdown", "teardown"]
 
-- include: ../../playbooks/teardown.yml
+- import_playbook: ../../playbooks/teardown.yml
   tags: ["teardown"]
