@@ -1,0 +1,10 @@
+---
+
+- name: "Generate host facts before creating any VMs"
+  hosts: nodes
+  tasks:
+    - set_fact:
+        subnets: "{{ networks | get_subnets }}"
+        interfaces: "{{ inventory_hostname | get_nics }}"
+    - debug:
+        msg: "{{ interfaces }}"
