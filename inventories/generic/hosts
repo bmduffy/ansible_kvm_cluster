@@ -1,19 +1,17 @@
+node1.test.cluster.local
+node2.test.cluster.local
+node3.test.cluster.local
 
-node1 vcpus=1 memory=1024 nics=['eth0', 'eth1']
-node2 vcpus=1 memory=1024 nics=['eth0', 'eth1']
-node3 vcpus=1 memory=1024 nics=['eth0', 'eth1']
-node4 vcpus=1 memory=1024 nics=['eth0', 'eth1']
-node5 vcpus=1 memory=1024 nics=['eth0', 'eth1']
-node6 vcpus=1 memory=1024 nics=['eth0', 'eth1']
+[node1]
+node1.test.cluster.local
 
-[dev:children]
+[node2]
+node2.test.cluster.local
+
+[node3]
+node3.test.cluster.local
+
+[nodes:children]
 node1
 node2
-
-[int:children]
 node3
-node4
-
-[prod:children]
-node5
-node6

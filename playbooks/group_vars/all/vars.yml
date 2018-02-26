@@ -6,14 +6,11 @@
 timezone: "Europe/Dublin"
 keymap:   "ie"
 
+data_path: "~/.kvm | expand"
+ssh_key:   "~/.ssh/id_rsa.pub | expand"
+
 # Store secret data with `passwordstore`
-#
-# Setup
-#
 # Add data to the passwordstore
 # `>> pass insert vm/password`
 
-cluster_image_path:    "{{ lookup('passwordstore', 'vm/images')   }}"
-cluster_data_path:     "{{ lookup('passwordstore',  'vm/data')    }}"
-cluster_root_password: "{{ lookup('passwordstore', 'vm/password') }}"
-cluster_ssh_key:       "{{ lookup('passwordstore', 'vm/sshkey')   }}"
+root_password: "{{ lookup('passwordstore', 'vm/password') }}"

@@ -6,7 +6,5 @@ base_image: "CentOS-7-x86_64-GenericCloud.qcow2"
 os_variant: "centos7.0"
 
 networks:
-    - name: "eth0"
-      subnet: "5.5.5.0/24"
-    - name: "eth1"
-      subnet: "4.4.4.0/24"
+  eth0: "10.0.0.0/24"
+  eth1: "10.0.1.0/24"
