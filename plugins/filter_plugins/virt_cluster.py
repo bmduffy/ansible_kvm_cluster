@@ -28,23 +28,23 @@ class VirtualNetwork(object):
             for host in dns.getElementsByTagName('host'):
                 ipv4 = host.getAttribute('ip')
                 hostname = getElement(host, 'hostname')
-                ipv4_to_hostname[hostname] = ipv4
-                hostname_to_ipv4[ipv4] = hostname
+                hostname_to_ipv4[hostname] = ipv4
+                ipv4_to_hostname[ipv4] = hostname
 
-        dhcp = self.data.getElementsByTagName('dhcp')
+        dhcp = self.data.getElementsByTagName('dhcp')[0]
 
-        for host in dhcp.getElementByTagName('host'):
+        for host in dhcp.getElementsByTagName('host'):
             macaddress = host.getAttribute('mac')
             ipv4 = host.getAttribute('ip')
-            self.by_macaddress[mac] = {
+            self.by_macaddress[macaddress] = {
                 'ipv4': ipv4,
-                'hostname': ipv4_to_hostname[ipv4]
+                'hostname': ipv4_to_hostname.get(ipv4)
             }
             self.by_ipv4[ipv4] = {
                 'macaddress' : macaddress,
-                'hostname': ipv4_to_hostname[ipv4],
+                'hostname': ipv4_to_hostname.get(ipv4),
             }
-            self.by_hostname[ipv4_to_hostname[ipv4]] = {
+            self.by_hostname[ipv4_to_hostname.get(ipv4)] = {
                 'ipv4': ipv4,
                 'macaddress': macaddress,
             }
@@ -58,8 +58,8 @@ class VirtualNetwork(object):
         self.domain = getAttribute(self.data, 'domain', 'name')
         self.macaddress = getAttribute(self.data, 'mac', 'address')
 
-        self.by_hostname = {}
-        self.by_ipv4 = {}
+        self.by_ipv4        = {}
+        self.by_hostname    = {}
         self.by_macaddress  = {}
 
         self.get_mappings()
@@ -83,7 +83,7 @@ class VirtualNetwork(object):
         return self.by_ipv4.keys()
 
     def get_hostnames(self):
-        return self.by_hostnames.keys()
+        return self.by_hostname.keys()
 
     def get_macaddresses(self):
         return self.by_macaddress.keys()
@@ -91,8 +91,8 @@ class VirtualNetwork(object):
     def get_by_ipv4(self, ipv4):
         return self.by_ipv4.get(ipv4)
 
-    def get_by_hostnames(self, hostname):
-        return self.by_hostnames.get(hostname)
+    def get_by_hostname(self, hostname):
+        return self.by_hostname.get(hostname)
 
     def get_by_macaddress(self, macaddress):
         return self.by_macaddress.get(macaddress)
@@ -113,7 +113,7 @@ class VirtualMachine(object):
 
         def get_dict(self):
             return {
-                "mac": self.macaddress,
+                "macaddress": self.macaddress,
                 "network": self.network,
                 "model": self.model
             }
@@ -320,7 +320,7 @@ class FilterModule():
         vm = get_vm(hostname)
         networks = get_networks()
         nics = []
-        for nic in vim.nics:
+        for nic in vm.nics:
             nic_data = nic.get_dict()
             netname = nic_data.get('network')
             macaddr = nic_data.get('macaddress')
