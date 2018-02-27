@@ -4,10 +4,14 @@ import os
 import libvirt
 import xml.dom.minidom
 
+from ansible.errors import AnsibleError, AnsibleParserError
+
+
 def merge_dicts(x, y):
     merged = x.copy()
     merged.update(y)
     return merged
+
 
 def getElement(dom, tag):
     return dom.getElementsByTagName(tag)[0].firstChild.nodeValue
@@ -15,6 +19,102 @@ def getElement(dom, tag):
 
 def getAttribute(dom, tag, attr):
     return dom.getElementsByTagName(tag)[0].getAttribute(attr)
+
+
+def bits(ip):
+    return "".join(["{0:08b}".format(int(x)) for x in ip.split(".")])
+
+
+def ipv4(bits):
+    bites = [bits[x: x + 8] for x in range(0, 32, 8)]
+    bite = lambda x: str(int("".join(x), 2))
+    return ".".join([bite(x) for x in bites])
+
+
+def or_gate(x, y):
+    return '0' if x == '0' and y == '0' else '1'
+
+
+def and_gate(x, y):
+    return '1' if x == '1' and y == '1' else '0'
+
+
+def xor_gate(x, y):
+    return '0' if (x == '1' and y == '1') \
+               or (x == '0' and y == '0') else '1'
+
+
+def bitwise_or(x, y):
+    return ipv4("".join(
+        [or_gate(i, j) for i, j in zip(bits(x), bits(y))]))
+
+
+def bitwise_xor(x, y):
+    return ipv4("".join(
+        [xor_gate(i, j) for i, j in zip(bits(x), bits(y))]))
+
+
+def bitwise_and(x, y):
+    return ipv4("".join(
+        [and_gate(i, j) for i, j in zip(bits(x), bits(y))]))
+
+
+def complement(ip):
+    return ipv4("".join(
+        [str(int(x != '1')) for x in bits(ip)]))
+
+
+def get_ipv4_netmask(length):
+    return ipv4("".join(
+        ['1' if x < int(length) else '0' for x in range(32)]))
+
+
+def increment_ipv4(value):
+    pass
+
+
+class Subnet(object):
+
+    def __init__(self, cidr):
+
+        address, length = cidr.split("/")
+
+        self.cidr      = cidr
+        self.netmask   = get_ipv4_netmask(length)
+        self.wildcard  = complement(self.netmask)
+        self.gateway   = bitwise_and(address, self.netmask)
+        self.broadcast = bitwise_or(self.gateway, self.wildcard)
+        self.min_host  = bitwise_or(self.gateway, "0.0.0.1")
+        self.max_host  = bitwise_xor(self.broadcast, "0.0.0.1")
+
+    def to_dict(self):
+        return {
+            "cidr": self.cidr,
+            "gateway": self.address,
+            "netmask": self.netmask,
+            "wildcard": self.wildcard,
+            "broadcast": self.broadcast,
+            "dhcp": {
+                "range": {
+                    "start": self.min_host,
+                    "end":   self.max_host
+                }
+            }
+        }
+
+    def __str__(self):
+        return """
+        ---- Subnet ---
+        cidr:      {}
+        netmask:   {}
+        gateway:   {}
+        wildcard:  {}
+        broadcast: {}
+        min_host:  {}
+        max_host:  {}
+        """.format(
+            self.cidr, self.netmask, self.gateway,
+            self.wildcard, self.broadcast, self.min_host, self.max_host)
 
 
 class VirtualNetwork(object):
@@ -49,6 +149,15 @@ class VirtualNetwork(object):
                 'macaddress': macaddress,
             }
 
+    def get_cidr_block(self):
+
+        ip_block = self.data.getElementsByTagName('ip')[0]
+
+        self.gateway = ip_block.getAttribute('address')
+        self.netmask = ip_block.getAttribute('netmask')
+        self.length = sum([int(b) for b in bits(self.netmask)])
+        self.cidr_block = "{}/{}".format(self.gateway, self.length)
+
     def process_xml_data(self):
 
         self.name   = getElement(self.data, 'name')
@@ -57,6 +166,8 @@ class VirtualNetwork(object):
         self.bridge = getAttribute(self.data, 'bridge', 'name')
         self.domain = getAttribute(self.data, 'domain', 'name')
         self.macaddress = getAttribute(self.data, 'mac', 'address')
+
+        self.get_cidr_block()
 
         self.by_ipv4        = {}
         self.by_hostname    = {}
@@ -167,81 +278,20 @@ class VirtualMachine(object):
                 for x in self.nics]))
 
 
-def bits(ip):
-    return "".join(["{0:08b}".format(int(x)) for x in ip.split(".")])
+def get_all_assigned_subnets():
+    networks = get_networks()
+    subnets = {}
+    for network in networks.values():
+        subnets[network.cidr_block] = network.name
+    return subnets
 
 
-def ipv4(bits):
-    bites = [bits[x: x + 8] for x in range(0, 32, 8)]
-    bite = lambda x: str(int("".join(x), 2))
-    return ".".join([bite(x) for x in bites])
-
-
-def or_gate(x, y):
-    return '0' if x == '0' and y == '0' else '1'
-
-
-def and_gate(x, y):
-    return '1' if x == '1' and y == '1' else '0'
-
-
-def xor_gate(x, y):
-    return '0' if (x == '1' and y == '1') \
-               or (x == '0' and y == '0') else '1'
-
-
-def bitwise_or(x, y):
-    return ipv4("".join(
-        [or_gate(i, j) for i, j in zip(bits(x), bits(y))]))
-
-
-def bitwise_xor(x, y):
-    return ipv4("".join(
-        [xor_gate(i, j) for i, j in zip(bits(x), bits(y))]))
-
-
-def bitwise_and(x, y):
-    return ipv4("".join(
-        [and_gate(i, j) for i, j in zip(bits(x), bits(y))]))
-
-
-def complement(ip):
-    return ipv4("".join(
-        [str(int(x != '1')) for x in bits(ip)]))
-
-
-def get_ipv4_netmask(length):
-    return ipv4("".join(
-        ['1' if x < int(length) else '0' for x in range(32)]))
-
-
-def increment_ipv4(value):
-    pass
-
-
-def calculate_subnet(network):
-
-    address, length = network.split("/")
-
-    netmask   = get_ipv4_netmask(length)
-    wildcard  = complement(netmask)
-    broadcast = bitwise_or(address, wildcard)
-    min_host  = bitwise_or(address, "0.0.0.1")
-    max_host  = bitwise_xor(broadcast, "0.0.0.1")
-
-    return {
-        "network": network,
-        "gateway": address,
-        "netmask": netmask,
-        "wildcard": wildcard,
-        "broadcast": broadcast,
-        "dhcp": {
-            "range": {
-                "start": min_host,
-                "end":   max_host
-            }
-        }
-    }
+def get_all_assigned_ipv4_addresses():
+    networks = get_networks()
+    ipv4s = {}
+    for network in networks.values():
+        ipv4s.update(network.by_ipv4)
+    return ipv4s
 
 
 def get_vms():
@@ -297,16 +347,10 @@ def get_random_macaddress():
     return new_mac
 
 
-class FilterModule():
-
-    def get_all_assigned_subnets(self):
-        pass
-
-    def get_all_assigned_ipv4_addresses(self):
-        pass
+class FilterModule(object):
 
     def get_subnet(self, network):
-        return calculate_subnet(network)
+        return Subnet(network).to_dict()
 
     def get_subnets(self, networks):
         subnets = {}
