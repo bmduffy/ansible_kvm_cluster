@@ -1,9 +1,0 @@
----
-
-- hosts: localhost
-  connection: local
-  tasks:
-    - name: "Generate cluster variable data"
-      meta_cluster:
-        path: "{{ cluster_data_path }}"
-        state: "present"

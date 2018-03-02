@@ -16,7 +16,7 @@
 
 - include_tasks: provision_instance.yml
   when: instance.name not in instance_list
-  with_items: "{{ nodes.instances }}"
+  with_items: "{{ instances }}"
   loop_control:
     loop_var: instance
 

@@ -6,8 +6,20 @@
   connection: local
   environment:
     LIBGUESTFS_BACKEND: "direct"
-    # LIBGUESTFS_DEBUG: 1
-    # LIBGUESTFS_TRACE: 1
-  roles:
-    - {role: create_networks}
-    - {role: create_instances}
+  tasks:
+  - set_fact:
+      networks:  "{{ domain   | get_networks(cidr_blocks) }}"
+      instances: "{{ hostvars | get_instances(domain, cidr_blocks) }}"
+  - import_role:
+      name: "create_networks"
+  - import_role:
+      name: "create_instances"
+
+# TODO:
+# Work Around; There is currently no xfs support for virt-resize
+# so need to grow the root files system manually
+- name: "Workaround virt-resize XFS bug"
+  hosts: all
+  tasks:
+  - name: "Make sure the root device is filling the disk"
+    command: "xfs_growfs -d /dev/vda1"
