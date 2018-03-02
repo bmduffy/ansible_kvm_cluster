@@ -6,49 +6,53 @@
   connection: local
   tasks:
 
-    - name: "list VMs"
-      virt:
-        command: list_vms
-      register: output
+  - set_fact:
+      networks:  "{{ domain   | get_networks(cidr_blocks) }}"
+      instances: "{{ hostvars | get_instances(domain, cidr_blocks) }}"
 
-    - name: "Get VM list"
-      set_fact:
-         vm_names: "{{ output.list_vms }}"
+  - name: "list VMs"
+    virt:
+      command: list_vms
+    register: output
 
-    - name: "Undefine/remove all VMs from KVM"
-      virt:
-        name: "{{ item.name }}"
-        command: undefine
-      with_items: "{{ nodes.instances }}"
-      when: item.name in vm_names
+  - name: "Get VM list"
+    set_fact:
+      vm_names: "{{ output.list_vms }}"
 
-    - name: "Find a list of VM disks for this cluster"
-      command: |
-          find {{ image_path }} -name "*.{{ domain }}.disk.*"
-      register: output
+  - name: "Undefine/remove all VMs from KVM"
+    virt:
+      name: "{{ item.name }}"
+      command: undefine
+    when: item.name in vm_names
+    with_items: "{{ instances }}"
 
-    - name: "Gather facts about VM disks"
-      set_fact:
-        delete_disks: "{{ output.stdout_lines }}"
+  - name: "Find a list of VM disks for this cluster"
+    command: >
+      find {{ image_path }} -name "*.{{ domain }}.disk.*"
+    register: output
 
-    - name: "Clean up all the disks"
-      file:
-        path: "{{ item }}"
-        state: absent
-      with_items: "{{ delete_disks }}"
+  - name: "Gather facts about VM disks"
+    set_fact:
+      delete_disks: "{{ output.stdout_lines }}"
 
-    - name: "List all cluster networks"
-      virt_net:
-        command: list_nets
-      register: output
+  - name: "Clean up all the disks"
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items: "{{ delete_disks }}"
 
-    - name: "Get cluster network list"
-      set_fact:
-        net_names: "{{ output.list_nets }}"
+  - name: "List all cluster networks"
+    virt_net:
+      command: list_nets
+    register: output
 
-    - name: "Undefine/remove all networks from KVM"
-      virt_net:
-        state: absent
-        name: "{{ item.name }}"
-      with_items: "{{ networks }}"
-      when: item.name in net_names
+  - name: "Get cluster network list"
+    set_fact:
+      net_names: "{{ output.list_nets }}"
+
+  - name: "Undefine/remove all networks from KVM"
+    virt_net:
+      state: absent
+      name: "{{ item.name }}"
+    when: item.name in net_names
+    with_items: "{{ networks }}"

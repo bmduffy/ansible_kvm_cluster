@@ -2,6 +2,7 @@
 
 cpus: 1
 memory: 1024
-nics:
-  - "eth0"
-  - "eth1"
+
+boot_disk:
+  format: "qcow2"
+  size: "20G"

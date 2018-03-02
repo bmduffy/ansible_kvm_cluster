@@ -5,8 +5,9 @@
 timezone: "Europe/Dublin"
 keymap:   "ie"
 
-data_path: "~/.kvm | expand"
-ssh_key:   "~/.ssh/id_rsa.pub | expand"
+image_path: "{{ '~/libvirt/images'  | expand }}"
+data_path:  "{{ '~/.kvm'            | expand }}"
+ssh_key:    "{{ '~/.ssh/id_rsa.pub' | expand }}"
 
 # Store secret data with `passwordstore`
 # Add data to the passwordstore

@@ -6,34 +6,38 @@
   connection: local
   tasks:
 
-    - name: "list VMs"
-      virt:
-        command: list_vms
-      register: output
+  - set_fact:
+      networks:  "{{ domain   | get_networks(cidr_blocks) }}"
+      instances: "{{ hostvars | get_instances(domain, cidr_blocks) }}"
 
-    - name: "Get VM list"
-      set_fact:
-        vm_names: "{{ output.list_vms }}"
+  - name: "list VMs"
+    virt:
+      command: list_vms
+    register: output
 
-    - name: "Shutdown all VMs"
-      virt:
-        name: "{{ item.name }}"
-        state: shutdown
-      with_items: "{{ nodes.instances }}"
-      when: item.name in vm_names
+  - name: "Get VM list"
+    set_fact:
+      vm_names: "{{ output.list_vms }}"
 
-    - name: "List all cluster networks"
-      virt_net:
-        command: list_nets
-      register: output
+  - name: "Shutdown all VMs"
+    virt:
+      name: "{{ item.name }}"
+      state: shutdown
+    when: item.name in vm_names
+    with_items: "{{ instances }}"
 
-    - name: "Get cluster network list"
-      set_fact:
-        net_names: "{{ output.list_nets }}"
+  - name: "List all cluster networks"
+    virt_net:
+      command: list_nets
+    register: output
 
-    - name: "Render all networks inactive"
-      virt_net:
-        state: inactive
-        name: "{{ item.name }}"
-      with_items: "{{ networks }}"
-      when: item.name in net_names
+  - name: "Get cluster network list"
+    set_fact:
+      net_names: "{{ output.list_nets }}"
+
+  - name: "Render all networks inactive"
+    virt_net:
+      state: inactive
+      name: "{{ item.name }}"
+    when: item.name in net_names
+    with_items: "{{ networks }}"

@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import random
 import libvirt
 import xml.dom.minidom
 
@@ -69,8 +70,31 @@ def get_ipv4_netmask(length):
         ['1' if x < int(length) else '0' for x in range(32)]))
 
 
-def increment_ipv4(value):
-    pass
+def to_int_array(str_ipv4):
+    return [int(x) for x in str_ipv4.split(".")]
+
+
+def to_string(int_array):
+    return ".".join([str(x) for x in int_array])
+
+
+def increment_ipv4(str_ipv4):
+    int_array = to_int_array(str_ipv4)
+    if int_array[3] < 255:
+        int_array[3] += 1
+    else:
+        int_array[3] = 0
+        if int_array[2] < 255:
+            int_array[2] += 1
+        else:
+            int_array[2] = 0
+            if int_array[1] < 255:
+                int_array[1] += 1
+            else:
+                int_array[1] = 0
+                if int_array[0] < 255:
+                    int_array[0] += 1
+    return to_string(int_array)
 
 
 class Subnet(object):
@@ -90,7 +114,8 @@ class Subnet(object):
     def to_dict(self):
         return {
             "cidr": self.cidr,
-            "gateway": self.address,
+            "mode": "nat",
+            "gateway": self.min_host,
             "netmask": self.netmask,
             "wildcard": self.wildcard,
             "broadcast": self.broadcast,
@@ -188,7 +213,13 @@ class VirtualNetwork(object):
           bridge:     {}
           domain:     {}
           macaddress: {}
-        """
+          cidr_block: {}
+          netmask:    {}
+          gateway:    {}
+        """.format(
+            self.name, self.uuid, self.mode, self.bridge,
+            self.domain, self.macaddress, self.cidr_block,
+            self.netmask, self.gateway)
 
     def get_ipv4s(self):
         return self.by_ipv4.keys()
@@ -278,35 +309,7 @@ class VirtualMachine(object):
                 for x in self.nics]))
 
 
-def get_all_assigned_subnets():
-    networks = get_networks()
-    subnets = {}
-    for network in networks.values():
-        subnets[network.cidr_block] = network.name
-    return subnets
-
-
-def get_all_assigned_ipv4_addresses():
-    networks = get_networks()
-    ipv4s = {}
-    for network in networks.values():
-        ipv4s.update(network.by_ipv4)
-    return ipv4s
-
-
-def get_vms():
-    virt = libvirt.openReadOnly("qemu:///system")
-    vms = [VirtualMachine(x) for x in virt.listAllDomains()]
-    names = [x.name for x in vms]
-    virt.close()
-    return dict(zip(names, vms))
-
-
-def get_vm(hostname):
-    return get_vms().get(hostname)
-
-
-def get_networks():
+def get_virtual_networks():
     virt = libvirt.openReadOnly("qemu:///system")
     networks = [VirtualNetwork(x) for x in virt.listAllNetworks()]
     names = [x.name for x in networks]
@@ -314,18 +317,48 @@ def get_networks():
     return dict(zip(names, networks))
 
 
-def get_network(netname):
-    return get_networks().get(netname)
+def get_virtual_network(netname):
+    return get_virtual_networks().get(netname)
 
 
-def get_assigned_macaddresses():
+def get_all_assigned_subnets():
+    networks = get_virtual_networks()
+    subnets = {}
+    for network in networks.values():
+        subnets[network.cidr_block] = network.name
+    return subnets
+
+
+def get_all_assigned_ipv4_addresses():
+    networks = get_virtual_networks()
+    assigned = {}
+    if networks:
+        for netname, virtual_network in networks.iteritems():
+            assigned[netname] = virtual_network.get_ipv4s()
+    return assigned
+
+
+def get_virtual_machines():
+    virt = libvirt.openReadOnly("qemu:///system")
+    vms = [VirtualMachine(x) for x in virt.listAllDomains()]
+    names = [x.name for x in vms]
+    virt.close()
+    return dict(zip(names, vms))
+
+
+def get_virtual_machine(hostname):
+    return get_virtual_machines().get(hostname)
+
+
+def get_all_assigned_macaddresses():
 
     macs_assigned_to_vms = dict(
         [(n.macaddress, n.network)
-         for v in get_vms().values() for n in v.nics])
+         for v in get_virtual_machines().values() for n in v.nics])
 
     macs_assigned_to_net_bridges = dict(
-        [(n.macaddress, n.name) for n in get_networks.values()])
+        [(n.macaddress, n.name)
+        for n in get_virtual_networks().values()])
 
     return merge_dicts(
         macs_assigned_to_vms,
@@ -333,53 +366,102 @@ def get_assigned_macaddresses():
     )
 
 
-def generate_random_macaddress():
+def geterate_random_macaddress():
     digit = lambda: random.choice('0123456789ABCDEF')
     digits = [digit() for _ in xrange(6)]
     return "52:54:00:{}{}:{}{}:{}{}".format(*digits)
 
 
-def get_random_macaddress():
-    new_mac = generate_random_macaddress()
-    assigned_macaddresses = get_assigned_macaddresses()
-    while new_mac in assigned_macaddresses:
-        new_mac = generate_random_macaddress()
-    return new_mac
+def get_network(cidr_block):
+    return Subnet(cidr_block).to_dict()
+
+
+def get_networks(domain, cidr_blocks):
+    networks = []
+    for block in cidr_blocks:
+        data = get_network(block.get('cidr'))
+        data['name'] = "{}.{}".format(block.get('name'), domain)
+        networks.append(data)
+    return networks
+
+
+def get_instances(hostvars, domain, cidr_blocks):
+
+    assigned_macaddresses = get_all_assigned_macaddresses()
+    assigned_ip_addresses = get_all_assigned_ipv4_addresses()
+
+    networks = get_networks(domain, cidr_blocks)
+    instances = []
+
+    def setup_host_nic(hostname, network):
+
+        virtual_machine = get_virtual_machine(hostname)
+        virtual_network = get_virtual_network(network.get('name'))
+
+        macaddress = None
+        ip_address = None
+
+        if virtual_machine is not None and virtual_network is not None:
+            data = virtual_network.get_by_hostname(hostname)
+            if data is not None:
+                macaddress = data.get('macaddress')
+                ip_address = data.get('ipv4')
+        else:
+
+            macaddress = generate_random_macaddress()
+
+            while macaddress in assigned_macaddresses:
+                macaddress = generate_random_macaddress()
+
+            assigned_macaddresses[macaddress] = hostname
+
+            min_host = network.get("dhcp").get("range").get("start")
+            max_host = network.get("dhcp").get("range").get("start")
+
+            ip_address = increment_ipv4(min_host)
+            while ip_address in assigned_ip_addresses:
+                ip_address = increment_ipv4(ip_address)
+
+            assigned_ip_addresses[ip_address] = hostname
+
+        return macaddress, ip_address
+
+    for hostname in hostvars.keys():
+
+        data = hostvars[hostname]
+        nics = []
+
+        for network in networks:
+            network_name = network.get('name')
+            macaddress, ip_address = setup_host_nic(hostname, network)
+            nics.append({
+                "network"    : network_name,
+                "macaddress" : macaddress,
+                "model"      : "virtio",
+                "ipv4"       : ip_address,
+            })
+
+        metadata = {
+            "name"        : hostname,
+            "cpus"        : data.get('cpus'),
+            "memory"      : data.get('memory'),
+            "nics"        : nics,
+            "boot_disk"   : data.get('boot_disk')
+        }
+
+        if data.get('other_disks') is not None:
+            metadata['other_disks'] = data.get('other_disks')
+
+        instances.append(metadata)
+
+    return instances
 
 
 class FilterModule(object):
 
-    def get_subnet(self, network):
-        return Subnet(network).to_dict()
-
-    def get_subnets(self, networks):
-        subnets = {}
-        if networks:
-            subnets = dict(
-                [(name, self.get_subnet(network))
-                  for name, network in networks.iteritems()])
-        return subnets
-
-    def get_nics(self, hostname, **kwargs):
-        vm = get_vm(hostname)
-        networks = get_networks()
-        nics = []
-        for nic in vm.nics:
-            nic_data = nic.get_dict()
-            netname = nic_data.get('network')
-            macaddr = nic_data.get('macaddress')
-            network = networks.get(netname)
-            nic_data['ipv4'] = network.get_by_macaddress(macaddr).get('ipv4')
-            nics.append(nic_data)
-        return nics
-
-    def expand(self, path):
-        return os.path.expanduser(path)
-
     def filters(self):
         return {
-            'expand'      : self.expand,
-            'get_nics'    : self.get_nics,
-            'get_subnet'  : self.get_subnet,
-            'get_subnets' : self.get_subnets,
+            'get_network'   : get_network,
+            'get_networks'  : get_networks,
+            'get_instances' : get_instances,
         }
