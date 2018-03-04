@@ -366,7 +366,7 @@ def get_all_assigned_macaddresses():
     )
 
 
-def geterate_random_macaddress():
+def generate_random_macaddress():
     digit = lambda: random.choice('0123456789ABCDEF')
     digits = [digit() for _ in xrange(6)]
     return "52:54:00:{}{}:{}{}:{}{}".format(*digits)

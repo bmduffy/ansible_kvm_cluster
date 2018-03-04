@@ -23,9 +23,6 @@
     actual_boot_disk_size:  "{{ boot_disk_info.size     | disk_size }}"
     desired_boot_disk_size: "{{ instance.boot_disk.size | disk_size }}"
 
-- debug:
-    msg: "actual: {{ actual_boot_disk_size}}  desired: {{ desired_boot_disk_size }}"
-
 - name: "Resize boot disk and expand root partition"
   shell: >
     qemu-img resize {{ boot_disk }} {{ instance.boot_disk.size }} && \

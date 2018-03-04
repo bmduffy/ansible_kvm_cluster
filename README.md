@@ -33,23 +33,6 @@ machine and restart it;
 
 ## Repository Strucutre
 
-```
->> cd ansible_kvm_cluster/clusters
-```
-Here you will see a number of clusters. Each is declaratively defined in
-`group_vars/all/vars.yml`. Following this directory structure you can add
-your own clusters or add automation to them via the `site.yml` file.
-
-```
-|-- generic
-|   |-- ansible.cfg
-|   |-- group_vars
-|   |   `-- all
-|   |       `-- vars.yml
-|   |-- hosts.yml
-|   `-- site.yml
-```
-
 Common and reusable `ansible` is stored in `roles` and `plays`. The following
 clusters are (will be) defined;
 
@@ -62,28 +45,5 @@ clusters are (will be) defined;
 
 Tasks carried out on clusters is managed by `ansible` tags;
 ```
->> cd ansible_kvm_cluster/clusters/generic
->> ansible-playbook site.yml --list-tags
-
-playbook: site.yml
-
-  play #1 (localhost): Provision Cluster	TAGS: [provision]
-      TASK TAGS: [provision]
-
-  play #2 (localhost): Start cluster	TAGS: [startup]
-      TASK TAGS: [startup]
-
-  play #3 (localhost): Clean '~/.ssh/known_hosts'	TAGS: [teardown,clean-hosts]
-      TASK TAGS: [clean-hosts, teardown]
-
-  play #4 (localhost): Shutdown cluster	TAGS: [teardown,shutdown]
-      TASK TAGS: [shutdown, teardown]
-
-  play #5 (localhost): Tear Down Cluster	TAGS: [teardown]
-      TASK TAGS: [teardown]
-```
-
-Provision a new `generic` cluster;
-```
->> ansible-playbook site.yml -t provision
+>> ansible-playbook -i inventories/generic playbooks/provision.yml
 ```

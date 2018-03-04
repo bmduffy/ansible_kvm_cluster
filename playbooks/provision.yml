@@ -14,6 +14,8 @@
       name: "create_networks"
   - import_role:
       name: "create_instances"
+  - pause:
+      seconds: 30
 
 # TODO:
 # Work Around; There is currently no xfs support for virt-resize

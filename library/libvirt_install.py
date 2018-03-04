@@ -6,6 +6,8 @@ from ansible.module_utils.basic import AnsibleModule
 
 def run_module():
 
+    
+
     fields = dict(
         domain = dict(type='str', required=True),
         name = dict(type='str', required=True),
@@ -28,6 +30,8 @@ def run_module():
 
     if module.check_mode:
         return result
+
+
 
     # check if the metadata is an update and generate any new data
     # update(module, result, data, meta_object.Node(**module.params))
