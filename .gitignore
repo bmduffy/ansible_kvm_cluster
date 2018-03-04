@@ -3,3 +3,4 @@
 **/*.pyo
 **/*.orig
 **/*~*
+**/\.merge_file*
