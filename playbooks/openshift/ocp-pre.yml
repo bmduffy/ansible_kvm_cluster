@@ -3,10 +3,11 @@
 - name: "Switch openshift-ansible to '{{ ocp_release }}'"
   hosts: localhost
   connection: local
-  git_config:
-    name: "submodule.openshift-ansible.branch"
-    value: "{{ ocp_release }}"
-    scope: local
+  tasks:
+  - git_config:
+      name: "submodule.openshift-ansible.branch"
+      value: "{{ ocp_release }}"
+      scope: local
 
 - name: "Configure NFS servers"
   hosts: nfs
