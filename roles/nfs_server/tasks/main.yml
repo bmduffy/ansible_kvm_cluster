@@ -4,11 +4,8 @@
 
 - name: "Install NFS packages on RHEL"
   yum:
-    name: "{{ pkg }}"
+    name: "nfs-utils"
     state: present
-  with_items: ["nfs-utils", "nfs-utils-lib"]
-  loop_control:
-    loop_var: pkg
 
 - name: "Create an NFS share directory"
   file:
@@ -43,6 +40,7 @@
     group: nfsnobody
     mode: 0700
     state: directory
+  when: container_shares is defined
   with_items: "{{ container_shares }}"
   loop_control:
     loop_var: directory
@@ -52,6 +50,7 @@
     path: "/etc/exports"
     regexp: "^/home/share/{{ directory }}"
     line: "/home/share/{{ directory }} *(rw,async,all_squash)"
+  when: container_shares is defined
   with_items: "{{ container_shares }}"
   loop_control:
     loop_var: directory

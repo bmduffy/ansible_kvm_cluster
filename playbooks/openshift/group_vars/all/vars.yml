@@ -1,11 +1,5 @@
 ---
 
-ocp_release: "release-3.6"
-
-excluders:
-- "atomic-openshift-excluder"
-- "atomic-openshift-docker-excluder"
-
 required_packages:
 - "wget"
 - "git"
@@ -15,3 +9,6 @@ required_packages:
 - "bridge-utils"
 - "bash-completion"
 - "python-virtualenv"
+- "kexec-tools"
+- "sos"
+- "psacct"

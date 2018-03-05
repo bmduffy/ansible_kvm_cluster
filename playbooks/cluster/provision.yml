@@ -4,6 +4,7 @@
   become: no
   hosts: localhost
   connection: local
+  gather_facts: false
   environment:
     LIBGUESTFS_BACKEND: "direct"
   tasks:
@@ -22,6 +23,7 @@
 # so need to grow the root files system manually
 - name: "Workaround virt-resize XFS bug"
   hosts: all
+  gather_facts: false
   tasks:
   - name: "Make sure the root device is filling the disk"
     command: "xfs_growfs -d /dev/vda1"

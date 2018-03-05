@@ -4,6 +4,7 @@
   hosts: localhost
   connection: local
   become: yes
+  gather_facts: false
   vars:
     user:  "{{ lookup('env', 'USER') }}"
     known: "/home/{{ user }}/.ssh/known_hosts"
