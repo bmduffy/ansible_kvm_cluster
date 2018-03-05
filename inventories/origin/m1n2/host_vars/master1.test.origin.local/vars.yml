@@ -1,0 +1,12 @@
+---
+
+cpus: 2
+memory: 2048
+
+boot_disk:
+  format: "qcow2"
+  size: "40G"
+
+other_disks:
+  - format: "qcow2"
+    size: "40G"

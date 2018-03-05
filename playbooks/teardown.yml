@@ -1,5 +1,0 @@
----
-
-- import_playbook: "shutdown.yml"
-- import_playbook: "remove-cluster.yml"
-- import_playbook: "clean-hosts-file.yml"

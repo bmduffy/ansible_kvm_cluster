@@ -1,0 +1,15 @@
+---
+
+excluders:
+- "atomic-openshift-excluder"
+- "atomic-openshift-docker-excluder"
+
+required_packages:
+- "wget"
+- "git"
+- "net-tools"
+- "bind-utils"
+- "iptables-services"
+- "bridge-utils"
+- "bash-completion"
+- "python-virtualenv"

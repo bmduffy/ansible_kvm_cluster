@@ -1,0 +1,46 @@
+---
+
+- name: "Configure NFS servers"
+  hosts: nfs
+  roles:
+  - "nfs_server"
+
+- name: "Configure NFS clients"
+  hosts: nodes
+
+  pre_tasks:
+
+  - name: "Clear out old transactions"
+    shell: "yum-complete-transaction --cleanup-only"
+
+  - name: "Install base packages on cluster nodes"
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ required_packages }}"
+
+  - name: "Ensure all packages are at their latest"
+    yum:
+      name: "*"
+      state: latest
+
+  - name: "Install atomic openshift utils"
+    yum:
+      name: "atomic-openshift-utils"
+      state: present
+
+  - name: "Install excluder packages"
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ excluders }}"
+
+  - name: "Run unexclude for install"
+    shell: "{{ item }} unexclude"
+    with_items: "{{ excluders }}"
+
+  roles:
+  - {role: "nfs_client"}
+  - {role: docker,
+     storage: "production",
+     block_device: "vdb"}

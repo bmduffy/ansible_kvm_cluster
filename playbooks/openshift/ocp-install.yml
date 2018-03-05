@@ -1,0 +1,5 @@
+---
+
+- import_playbook: "ocp-pre.yml"
+- import_playbook: "../../openshift_ansible/playbooks/config.yml"
+- import_playbook: "ocp-post.yml"
