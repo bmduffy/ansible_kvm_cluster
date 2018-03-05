@@ -1,5 +1,7 @@
 ---
 
+ocp_release: "release-3.6"
+
 excluders:
 - "atomic-openshift-excluder"
 - "atomic-openshift-docker-excluder"
