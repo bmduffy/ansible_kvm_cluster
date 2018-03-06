@@ -8,23 +8,13 @@
   tasks:
 
   - set_fact:
-      networks:  "{{ domain   | get_networks(cidr_blocks) }}"
-      instances: "{{ hostvars | get_instances(domain, cidr_blocks) }}"
-
-  - name: "list VMs"
-    virt:
-      command: list_vms
-    register: output
-
-  - name: "Get VM list"
-    set_fact:
-      vm_names: "{{ output.list_vms }}"
+      networks:  "{{ domain | list_networks_in_domain }}"
+      instances: "{{ domain | list_vms_in_domain }}"
 
   - name: "Undefine/remove all VMs from KVM"
     virt:
-      name: "{{ item.name }}"
+      name: "{{ item }}"
       command: undefine
-    when: item.name in vm_names
     with_items: "{{ instances }}"
 
   - name: "Find a list of VM disks for this cluster"
@@ -42,18 +32,8 @@
       state: absent
     with_items: "{{ delete_disks }}"
 
-  - name: "List all cluster networks"
-    virt_net:
-      command: list_nets
-    register: output
-
-  - name: "Get cluster network list"
-    set_fact:
-      net_names: "{{ output.list_nets }}"
-
   - name: "Undefine/remove all networks from KVM"
     virt_net:
       state: absent
-      name: "{{ item.name }}"
-    when: item.name in net_names
+      name: "{{ item }}"
     with_items: "{{ networks }}"

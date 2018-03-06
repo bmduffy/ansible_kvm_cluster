@@ -1,0 +1,19 @@
+- name: "Remove all snapshots"
+  become: no
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+
+  - set_fact:
+      instances: "{{ domain | list_vms_in_domain }}"
+
+  - set_fact:
+      snapshots: "{{ instances | list_snapshots }}"
+
+  - name: "Remove all VM snapshots"
+    command: >
+      virsh --connect qemu:///system \
+         snapshot-delete {{ item.virutal_machine_name }} \
+         --snapshotname {{ item.snapshot_name }}
+    with_items: "{{ snapshots }}"

@@ -7,34 +7,18 @@
   gather_facts: false
   tasks:
 
-    - name: "List all cluster networks"
-      virt_net:
-        command: list_nets
-      register: output
+  - set_fact:
+      networks:  "{{ domain | list_networks_in_domain }}"
+      instances: "{{ domain | list_vms_in_domain }}"
 
-    - name: "Get cluster network list"
-      set_fact:
-        net_names: "{{ output.list_nets }}"
+  - name: "Check all networks exist and are active"
+    virt_net:
+      state: active
+      name: "{{ item }}"
+    with_items: "{{ networks }}"
 
-    - name: "Check all networks exist and are active"
-      virt_net:
-        state: active
-        name: "{{ item.name }}"
-      with_items: "{{ networks }}"
-      failed_when: item.name not in net_names
-
-    - name: "list VMs"
-      virt:
-        command: list_vms
-      register: output
-
-    - name: "Get VM list"
-      set_fact:
-        vm_names: "{{ output.list_vms }}"
-
-    - name: "Check all VMs exist and are running"
-      virt:
-        name: "{{ item.name }}"
-        state: running
-      with_items: "{{ nodes.instances }}"
-      failed_when: item.name not in vm_names
+  - name: "Check all VMs exist and are running"
+    virt:
+      name: "{{ item }}"
+      state: running
+    with_items: "{{ instances }}"

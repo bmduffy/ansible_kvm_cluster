@@ -309,6 +309,25 @@ class VirtualMachine(object):
                 for x in self.nics]))
 
 
+class VirtualMachineSnapshot(object):
+
+    def process_xml_data(self):
+        values = self.data.getElementsByTagName("name")
+        self.snapshot_name = values[0].firstChild.nodeValue
+        self.virtual_machine_name = values[1].firstChild.nodeValue
+
+    def __init__(self, snapshot):
+        self.data = xml.dom.minidom.parseString(snapshot.getXMLDesc(0))
+        self.process_xml_data()
+
+    def __str__(self):
+        return """
+        ----- Virutal Machine Snapshot -----
+          virutal machine :   {}
+          snapshot        :   {}
+        """.format(self.virutal_machine_name, self.snapshot_name)
+
+
 def get_virtual_networks():
     virt = libvirt.openReadOnly("qemu:///system")
     networks = [VirtualNetwork(x) for x in virt.listAllNetworks()]
@@ -457,11 +476,41 @@ def get_instances(hostvars, domain, cidr_blocks):
     return instances
 
 
+def list_snapshots(hosts):
+
+    virt = libvirt.openReadOnly("qemu:///system")
+    snapshots = [VirtualMachineSnapshot(snapshot)
+                 for vm in virt.listAllDomains()
+                 for snapshot in vm.listAllSnapshots()]
+    virt.close()
+
+    data = {}
+
+    for x in snapshots:
+        if x.virtual_machine_name not in data:
+            data[x.virtual_machine_name] = []
+        data[x.virtual_machine_name].append(x.snapshot_name)
+
+    return [{"virutal_machine_name": vm, "snapshot_name": snap}
+            for vm, snaps in data.iteritems() for snap in snaps]
+
+
+def list_vms_in_domain(domain):
+    return [x for x in get_virtual_machines().keys() if domain in x]
+
+
+def list_networks_in_domain(domain):
+    return [x for x in get_virtual_networks().keys() if domain in x]
+
+
 class FilterModule(object):
 
     def filters(self):
         return {
-            'get_network'   : get_network,
-            'get_networks'  : get_networks,
-            'get_instances' : get_instances,
+            'get_network'             : get_network,
+            'get_networks'            : get_networks,
+            'get_instances'           : get_instances,
+            'list_snapshots'          : list_snapshots,
+            'list_networks_in_domain' : list_networks_in_domain,
+            'list_vms_in_domain'      : list_vms_in_domain,
         }

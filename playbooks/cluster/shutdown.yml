@@ -8,37 +8,17 @@
   tasks:
 
   - set_fact:
-      networks:  "{{ domain   | get_networks(cidr_blocks) }}"
-      instances: "{{ hostvars | get_instances(domain, cidr_blocks) }}"
-
-  - name: "list VMs"
-    virt:
-      command: list_vms
-    register: output
-
-  - name: "Get VM list"
-    set_fact:
-      vm_names: "{{ output.list_vms }}"
+      networks:  "{{ domain | list_networks_in_domain }}"
+      instances: "{{ domain | list_vms_in_domain }}"
 
   - name: "Shutdown all VMs"
     virt:
-      name: "{{ item.name }}"
+      name: "{{ item }}"
       state: shutdown
-    when: item.name in vm_names
     with_items: "{{ instances }}"
-
-  - name: "List all cluster networks"
-    virt_net:
-      command: list_nets
-    register: output
-
-  - name: "Get cluster network list"
-    set_fact:
-      net_names: "{{ output.list_nets }}"
 
   - name: "Render all networks inactive"
     virt_net:
       state: inactive
-      name: "{{ item.name }}"
-    when: item.name in net_names
+      name: "{{ item }}"
     with_items: "{{ networks }}"
