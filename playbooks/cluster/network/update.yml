@@ -1,0 +1,39 @@
+---
+
+- name: "Recreate libvirt networks with new configuration"
+  become: no
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+
+  - set_fact:
+      configured_networks: "{{ domain | list_networks_in_domain }}"
+      networks:  "{{ domain | list_networks_in_domain }}"
+      instances: ""
+
+  - name: "Undefine/remove all networks from KVM"
+    virt_net:
+      state: absent
+      name: "{{ item }}"
+    when: item in configured_networks
+    with_items: "{{ networks }}"
+
+  - name: "Recreate networks"
+    import_role:
+      name: "create_networks"
+
+  - name: "Assign instances static IPs for NICs via MAC address"
+    command: >
+      {% for nic in instance.nics %}
+        {% if nic.ipv4 is defined %}
+        virsh net-update {{ nic.network }} \
+            add ip-dhcp-host \
+            '<host mac="{{ nic.mac }}" ip="{{ nic.ipv4 }}"/>' \
+            --live --config
+        {% endif %}
+      {% endfor %}
+    with_items: "{{ instances }}"
+    loop_control:
+      loop_var: "instance"
+    become: yes

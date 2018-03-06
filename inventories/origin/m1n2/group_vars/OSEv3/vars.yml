@@ -26,7 +26,7 @@ openshift_disable_check:
 
 # This variable overrides the node selector that projects will
 # use by default when placing pods.
-osm_default_node_selector: "region=work"
+# osm_default_node_selector: "region=work"
 
 # SDN cluster network CIDR block from which pod IPs are assigned
 # Must not conflict with existing network blocks in your infrastructure.
@@ -60,13 +60,13 @@ openshift_node_kubelet_args:
   image-gc-low-threshold: ['5']
 
 # configure etcd to use NFS
-openshift_hosted_etcd_storage_kind: "nfs"
-openshift_hosted_etcd_storage_nfs_options: "*(rw,root_squash,sync,no_wdelay)"
-openshift_hosted_etcd_storage_nfs_directory: "/opt/osev3-etcd"
-openshift_hosted_etcd_storage_volume_name: "etcd-vol1"
-openshift_hosted_etcd_storage_access_modes: ["ReadWriteOnce"]
-openshift_hosted_etcd_storage_volume_size: "1G"
-openshift_hosted_etcd_storage_labels: { "storage": "etcd" }
+# openshift_hosted_etcd_storage_kind: "nfs"
+# openshift_hosted_etcd_storage_nfs_options: "*(rw,root_squash,sync,no_wdelay)"
+# openshift_hosted_etcd_storage_nfs_directory: "/opt/osev3-etcd"
+# openshift_hosted_etcd_storage_volume_name: "etcd-vol1"
+# openshift_hosted_etcd_storage_access_modes: ["ReadWriteOnce"]
+# openshift_hosted_etcd_storage_volume_size: "1G"
+# openshift_hosted_etcd_storage_labels: { "storage": "etcd" }
 
 # openshift_docker_additional_registries=<registry_hostname>
 # openshift_docker_insecure_registries=<registry_hostname>

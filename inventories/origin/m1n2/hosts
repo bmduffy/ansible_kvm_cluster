@@ -3,7 +3,6 @@
 masters
 nodes
 etcd
-nfs
 lb
 new_masters
 new_nodes
