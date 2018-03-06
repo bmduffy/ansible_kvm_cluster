@@ -1,0 +1,77 @@
+# https://docs.openshift.org/latest/install_config/install/advanced_install.html
+
+ansible_ssh_user: root
+
+# 0 to log errors and warnings only
+# 2 to log normal information (This is the default level.)
+# 4 to log debugging-level information
+# 6 to log API-level debugging information (request / response)
+# 8 to log body-level API debugging information
+debug_level: 8
+openshift_deployment_type: origin
+deployment_type: origin
+
+# Versions
+#openshift_image_tag=v3.7.0
+#openshift_pkg_version=-3.7.0
+openshift_release: v1.5
+
+containerized: false
+
+# skip these checks for local libvirt deploy, they won't pass because you can't
+# allocate the recommended system resources
+openshift_disable_check:
+- memory_availability
+- disk_availability
+
+# This variable overrides the node selector that projects will
+# use by default when placing pods.
+# osm_default_node_selector: "region=work"
+
+# SDN cluster network CIDR block from which pod IPs are assigned
+# Must not conflict with existing network blocks in your infrastructure.
+# Defaults 10.128.0.0/14 cannot be arbitrarily re-configured after deployment
+osm_cluster_network_cidr: "10.128.0.0/14"
+openshift_use_dnsmasq: true
+
+# master api console and ports
+#openshift_master_api_port=443
+#openshift_master_console_port=8756
+
+# enable ntp on masters to ensure proper failover, probably needed for HA only?
+openshift_clock_enabled: true
+
+# add this file and some dummy users in post configuration step
+openshift_master_identity_providers:
+- name: "htpasswd_auth"
+  login: true
+  challenge: true
+  kind: "HTPasswdPasswordIdentityProvider"
+  filename: "/etc/origin/master/htpasswd"
+
+openshift_master_default_subdomain: "apps.test.origin.local"
+
+# host variables applied to all nodes
+openshift_docker_options: "--log-driver json-file --log-opt max-size=1M --log-opt max-file=3"
+openshift_node_kubelet_args:
+  pods-per-core: ['10']
+  max-pods: ['20']
+  image-gc-high-threshold: ['10']
+  image-gc-low-threshold: ['5']
+
+# configure etcd to use NFS
+# openshift_hosted_etcd_storage_kind: "nfs"
+# openshift_hosted_etcd_storage_nfs_options: "*(rw,root_squash,sync,no_wdelay)"
+# openshift_hosted_etcd_storage_nfs_directory: "/opt/osev3-etcd"
+# openshift_hosted_etcd_storage_volume_name: "etcd-vol1"
+# openshift_hosted_etcd_storage_access_modes: ["ReadWriteOnce"]
+# openshift_hosted_etcd_storage_volume_size: "1G"
+# openshift_hosted_etcd_storage_labels: { "storage": "etcd" }
+
+# openshift_docker_additional_registries=<registry_hostname>
+# openshift_docker_insecure_registries=<registry_hostname>
+# openshift_docker_blocked_registries=<registry_hostname>
+
+# Turn off logging and metrics for now
+openshift_metrics_install_metrics: false
+openshift_logging_install_logging: false

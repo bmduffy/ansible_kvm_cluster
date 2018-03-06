@@ -1,0 +1,17 @@
+---
+
+htpasswd_file_path: "/etc/origin/master/htpasswd"
+
+required_packages:
+- "wget"
+- "git"
+- "net-tools"
+- "bind-utils"
+- "iptables-services"
+- "bridge-utils"
+- "bash-completion"
+- "python-virtualenv"
+- "kexec-tools"
+- "sos"
+- "psacct"
+- "NetworkManager"

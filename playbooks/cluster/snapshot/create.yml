@@ -1,0 +1,24 @@
+---
+
+- name: "Create a snapshot of all VMs"
+  hosts: localhost
+  connection: local
+  tasks:
+
+  - name: "Get a current date-time object to use for the snapshot"
+    set_fact:
+      tag: "{{ ansible_date_time }}"
+
+  - name: "Create a tag for the snaphot"
+    set_fact:
+      snap: >
+        snap-{{ tag.date }}.{{ tag.hour }}:{{ tag.minute }}:{{ tag.second }}
+
+  - name: "Take a snapshot of VMs in the cluster"
+    command: >
+      virsh --connect qemu:///system \
+        snapshot-create-as --domain {{ vm }} \
+                           --name {{ snap | hash('sha1') }}
+    with_items: "{{ groups.all }}"
+    loop_control:
+      loop_var: vm

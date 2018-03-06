@@ -4,37 +4,30 @@
 # https://docs.openstack.org/image-guide/modify-images.html
 # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-guest_virtual_machine_disk_access_with_offline_tools-virt_resize_resizing_guest_virtual_machines_offline
 
-- name: "Instance Fully Qualified Domain Name"
-  set_fact:
-      fqdn: "{{ instance.name }}.{{ domain }}"
+- set_fact:
+    disk_path: "{{ image_path }}/{{ instance.name }}"
+    base_path: "{{ image_path }}/{{ base_image }}"
 
-- name: "Get boot disk path ..."
-  set_fact:
-      boot_disk : "{{ image_path }}/{{ fqdn }}.disk.1"
+- set_fact:
+    boot_disk: "{{ disk_path }}.disk.0"
 
 - name: "Copy base image disk for '{{ instance.name }}'"
-  command: "cp {{ nodes.base_image }} {{ boot_disk }}"
+  command: "cp {{ base_path }} {{ boot_disk }}"
   args:
-      creates: "{{ boot_disk }}"
+    creates: "{{ boot_disk }}"
 
-- name: "Check what the boot disk size is"
-  command: "qemu-img info {{ boot_disk }}"
-  register: output
+- set_fact:
+    boot_disk_info: "{{ boot_disk | image_info }}"
 
-- name: "Store and convert boot size to an integer"
-  set_fact:
-      actual_boot_disk_size: "{{ output.stdout_lines[2].split()[2][:-1] | int }}"
-
-- name: "Get boot disk size ..."
-  set_fact:
-      desired_boot_disk_size: "{{ instance.disks[0].size | default(actual_boot_disk_size)}}"
+- set_fact:
+    actual_boot_disk_size:  "{{ boot_disk_info.size     | disk_size }}"
+    desired_boot_disk_size: "{{ instance.boot_disk.size | disk_size }}"
 
 - name: "Resize boot disk and expand root partition"
-  shell: |
-    qemu-img resize {{ boot_disk }} {{ instance.disks[0].size }}G && \
-    virt-resize \
-        --expand /dev/sda1 {{ nodes.base_image }} {{ boot_disk }}
-  when: actual_boot_disk_size < desired_boot_disk_size
+  shell: >
+    qemu-img resize {{ boot_disk }} {{ instance.boot_disk.size }} && \
+    virt-resize --expand /dev/sda1 {{ base_path }} {{ boot_disk }}
+  when: desired_boot_disk_size | int > actual_boot_disk_size | int
 
 - name: "Generate host prep script"
   template:
@@ -47,43 +40,38 @@
     virt-sysprep --connect qemu:///system \
       -a {{ boot_disk }} \
       --hostname {{ instance.name }} \
-      --root-password password:{{ nodes.root_password }} \
-      --ssh-inject root:file:{{ nodes.ssh_key }} \
-      --timezone {{ nodes.timezone }} \
+      --root-password password:{{ root_password }} \
+      --ssh-inject root:file:{{ ssh_key }} \
+      --timezone {{ timezone }} \
       --uninstall cloud-init.x86_64 \
       --firstboot {{ host_prep_script }}
 
 - name: "Creating instance '{{ instance.name }}'"
-  command: |
+  command: >
     virt-install --connect qemu:///system \
       --import --name {{ instance.name }} \
       --ram {{ instance.memory }} \
       --vcpus {{ instance.cpus }} \
-      --os-variant {{ nodes.os_variant }} \
-      {% for d in instance.disks %}
-      {% if d.size is not defined %}
-      --disk path={{ image_path }}/{{ fqdn }}.disk.{{ loop.index }},format={{ d.format }} \
-      {% else %}
-      --disk path={{ image_path }}/{{ fqdn }}.disk.{{ loop.index }},format={{ d.format }},size={{ d.size }}
-      {% endif %}
+      --os-variant {{ os_variant }} \
+      --disk path={{ boot_disk }} \
+      {% if instance.other_disks is defined %}
+      {% for d in instance.other_disks %}
+      --disk path={{ disk_path }}.disk.{{ loop.index }},format={{ d.format }},size={{ d.size | disk_size }} \
       {% endfor %}
+      {% endif %}
       {% for nic in instance.nics %}
-      --network network={{ nic.network }},model={{ nic.model }},mac={{ nic.mac }} \
+      --network network={{ nic.network }},model={{ nic.model }},mac={{ nic.macaddress }} \
       {% endfor %}
       --graphics none
 
-- name: "Wait for '{{ instance.name }}' to become available"
-  wait_for:
-    port: 22
-    timeout: 300
-
 - name: "Assign instance '{{ instance.name }}' static IPs for NICs via MAC address"
-  command: |
-    {% for nic in instance.nics %}
-    {% if nic.ipv4 is defined %}
+  command: >
     virsh net-update {{ nic.network }} \
-      add ip-dhcp-host '<host mac="{{ nic.mac }}" ip="{{ nic.ipv4 }}"/>' \
+      add ip-dhcp-host \
+      "<host mac='{{ nic.macaddress }}' ip='{{ nic.ipv4 }}'/>" \
       --live --config
-    {% endif %}
-    {% endfor %}
   become: yes
+  when: nic.ipv4 is defined
+  with_items: "{{ instance.nics }}"
+  loop_control:
+    loop_var: "nic"

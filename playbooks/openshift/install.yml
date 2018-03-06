@@ -1,0 +1,5 @@
+---
+
+- import_playbook: "pre-install.yml"
+- import_playbook: "../../openshift-ansible/playbooks/byo/config.yml"
+- import_playbook: "post-install.yml"

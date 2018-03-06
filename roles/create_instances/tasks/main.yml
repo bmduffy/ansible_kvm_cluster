@@ -14,9 +14,9 @@
   set_fact:
     instance_list: "{{ output.list_vms }}"
 
-- include: provision_instance.yml
+- include_tasks: provision_instance.yml
   when: instance.name not in instance_list
-  with_items: "{{ nodes.instances }}"
+  with_items: "{{ instances }}"
   loop_control:
     loop_var: instance
 

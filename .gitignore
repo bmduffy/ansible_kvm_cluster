@@ -1,3 +1,6 @@
 **/*.retry
 **/*.pyc
 **/*.pyo
+**/*.orig
+**/*~*
+**/\.merge_file*

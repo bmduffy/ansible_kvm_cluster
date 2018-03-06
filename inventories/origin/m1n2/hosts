@@ -1,0 +1,28 @@
+
+[OSEv3:children]
+masters
+nodes
+etcd
+lb
+new_masters
+new_nodes
+
+[nfs]
+nfs1.test.origin.local
+
+[masters]
+master1.test.origin.local
+
+[etcd]
+master1.test.origin.local
+
+[lb]
+
+[nodes]
+master1.test.origin.local openshift_labels="{'region': 'infra', 'zone': 'local'}"
+node1.test.origin.local openshift_labels="{'region': 'work', 'zone': 'local'}"
+node2.test.origin.local openshift_labels="{'region': 'work', 'zone': 'local'}"
+
+[new_nodes]
+
+[new_masters]

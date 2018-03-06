@@ -1,0 +1,39 @@
+---
+
+- name: "Tear Down Cluster"
+  become: no
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+
+  - set_fact:
+      networks:  "{{ domain | list_networks_in_domain }}"
+      instances: "{{ domain | list_vms_in_domain }}"
+
+  - name: "Undefine/remove all VMs from KVM"
+    virt:
+      name: "{{ item }}"
+      command: undefine
+    with_items: "{{ instances }}"
+
+  - name: "Find a list of VM disks for this cluster"
+    command: >
+      find {{ image_path }} -name "*.{{ domain }}.disk.*"
+    register: output
+
+  - name: "Gather facts about VM disks"
+    set_fact:
+      delete_disks: "{{ output.stdout_lines }}"
+
+  - name: "Clean up all the disks"
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items: "{{ delete_disks }}"
+
+  - name: "Undefine/remove all networks from KVM"
+    virt_net:
+      state: absent
+      name: "{{ item }}"
+    with_items: "{{ networks }}"

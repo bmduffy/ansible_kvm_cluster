@@ -1,0 +1,25 @@
+---
+
+# Base Cluster:
+# - Review `./group_vars/all/vars.yml`
+# - A set of procedurally described VMs
+# - A procedurally described host network
+# - Activate local DNS to resolve host and guest FQDN via NetworkManager
+
+- include: ../../plays/hostfile.yml
+  tags: ["provision", "hostfile"]
+
+- include: ../../plays/provision.yml
+  tags: ["provision"]
+
+- include: ../../plays/startup.yml
+  tags: ["startup"]
+
+- include: ../../plays/clean_hosts.yml
+  tags: ["clean-hosts", "teardown"]
+
+- include: ../../plays/shutdown.yml
+  tags: ["shutdown", "teardown"]
+
+- include: ../../plays/teardown.yml
+  tags: ["teardown"]

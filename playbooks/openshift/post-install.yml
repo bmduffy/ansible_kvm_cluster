@@ -1,0 +1,20 @@
+---
+
+- name: "Setup HTPasswd file on masters"
+  hosts: masters
+  tasks:
+
+  - name: "Install required software"
+    yum:
+      name: "python-passlib"
+      state: present
+
+  - name: "Make it '{{ htpasswd_file_path }}'"
+    htpasswd:
+      path: "{{ htpasswd_file_path }}"
+      name: "{{ item }}"
+      password: "passw0rd"
+      owner: root
+      group: root
+      mode: 0640
+    with_items: [ "grumpy", "sleepy", "dopey" ]

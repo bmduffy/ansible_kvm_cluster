@@ -20,7 +20,7 @@
   shell: "lvs | grep root | awk '{print $2}'"
   register: volume_group
 
-- name: "Resize the root logical volumelogical volume"
+- name: "Resize the root logical volume"
   lvol:
     vg: "{{ volume_group.stdout }}"
     lv: "root"

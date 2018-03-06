@@ -1,0 +1,12 @@
+---
+
+domain: "test.cluster.local"
+
+base_image: "CentOS-7-x86_64-GenericCloud.qcow2"
+os_variant: "centos7.0"
+
+cidr_blocks:
+  - name: "eth0"
+    cidr: "10.0.0.0/24"
+  - name: "eth1"
+    cidr: "10.0.1.0/24"

@@ -1,0 +1,29 @@
+<domain type='kvm'>
+  <name>{{ instance.name }}</name>
+  <memory unit='MiB'>{{ instance.memory }}</memory>
+  <vcpu placement='static'>{{ instance.cpus }}</vcpu>
+  <devices>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='{{ boot_disk }}'/>
+      <backingStore/>
+      <target dev='vda' bus='virtio'/>
+
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/>
+    </disk>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/home/brian.duffy/libvirt/images/node1.test.cluster.local.disk.1'/>
+      <backingStore/>
+      <target dev='vdb' bus='virtio'/>
+      <alias name='virtio-disk1'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x08' function='0x0'/>
+    </disk>
+    {% for nic in instance.nics %}
+    <interface type='network'>
+      <mac address='{{ nic.macaddress}}'/>
+      <source network='{{ nic.network }}' bridge='virbr0'/>
+      <model type='{{ nic.model }}'/>
+    </interface>
+    {% endfor %}
+</domain>
