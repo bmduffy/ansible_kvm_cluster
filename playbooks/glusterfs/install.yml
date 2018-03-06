@@ -1,0 +1,41 @@
+# https://wiki.centos.org/HowTos/GlusterFSonCentOS
+
+- name: "Install Gluster on nodes"
+  hosts: two_nodes
+  tasks:
+
+  - name: "Install CentOS Storage SIG"
+    yum:
+      name: centos-release-gluster
+      state: installed
+
+  - name: "Install GlusterFS related packages"
+    yum:
+      name: "{{ item }}"
+      state: installed
+    with_items:
+    - "firewalld"
+    - "glusterfs"
+    - "glusterfs-libs"
+    - "glusterfs-server"
+
+  - name: "Start and enable services for gluster"
+    systemd:
+      name: "{{ item }}"
+      enabled: yes
+      state: started
+    with_items: [ "firewalld", "glusterd" ]
+
+  - name: "set rule for glusterfs to firewalld"
+    firewalld:
+      permanent: yes
+      service: glusterfs
+      immediate: yes
+      state: enabled
+
+  - name: "Ensure nodes are added as gluster peers"
+    shell: "gluster peer probe {{ hostvars[item].inventory_hostname }}"
+    with_items: "{{ groups.two_nodes }}"
+    register: result
+    failed_when: "result.stderr is defined and '(?i)error' in result.stderr"
+    run_once: true

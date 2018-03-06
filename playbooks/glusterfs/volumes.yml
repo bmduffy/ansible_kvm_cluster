@@ -1,0 +1,46 @@
+# Useful Docs:
+#
+# - http://docs.ansible.com/ansible/gluster_volume_module.html
+
+
+- name: "Setup folders for bricks"
+  hosts: two_nodes
+  tasks:
+  - name: "Add kvm group"
+    group:
+      name: kvm
+      gid: 36
+      state: present
+  - name: "Add vdsm user"
+    user:
+      name: vdsm
+      uid: 36
+      group: kvm
+      state: present
+  - name: "Create brick folder"
+    file:
+      path: "/storage/{{ item }}"
+      owner: "vdsm"
+      group: "kvm"
+      state: directory
+      mode: u=rwx,g=rx,o=rx
+    with_items: "{{ gluster_bricks }}"
+
+- name: "Setup folders for bricks"
+  hosts: first_gluster_node
+  tasks:
+  - name: "Create gluster volumes"
+    gluster_volume:
+      state: present
+      name: "{{ item }}"
+      bricks: "/storage/{{ item }}"
+      replicas: "{{ groups.two_nodes | length }}"
+      transport: tcp
+      force: true
+      cluster: "{{ groups.two_nodes | join(',')}}"
+    with_items: "{{ gluster_bricks }}"
+  - name: "Ensure GlusterFS storage is started"
+    gluster_volume:
+      state: started
+      name: "{{ item }}"
+    with_items: "{{ gluster_bricks }}"

@@ -1,0 +1,38 @@
+---
+
+# https://wiki.centos.org/HowTos/GlusterFSonCentOS
+
+- name: Install CentOS Storage SIG
+  yum:
+    name: centos-release-gluster
+    state: installed
+
+- name: Install gluster package
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - glusterfs
+    - glusterfs-libs
+    - glusterfs-server
+
+- name: Ensure glusterd is running
+  service:
+    name: glusterd
+    enabled: yes
+    state: started
+
+# Must do firewall config here to avoid errors like this
+# peer probe: failed: Probe returned with Transport endpoint is not connected
+
+- name: "ensure firewalld is running"
+  service:
+    service: firewalld
+    state: running
+
+- name: "set rule for glusterfs to firewalld"
+  firewalld:
+    permanent: yes
+    service: glusterfs
+    immediate: yes
+    state: enabled

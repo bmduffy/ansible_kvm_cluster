@@ -1,0 +1,5 @@
+---
+
+gluster_bricks:
+- "test_data1"
+- "test_data2"

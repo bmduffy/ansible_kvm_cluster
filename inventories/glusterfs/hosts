@@ -1,0 +1,12 @@
+
+[first_gluster_node]
+gfs1.test.gluster.local
+
+[two_nodes]
+gfs1.test.gluster.local
+gfs2.test.gluster.local
+
+[three_nodes]
+gfs1.test.gluster.local
+gfs2.test.gluster.local
+gfs3.test.gluster.local

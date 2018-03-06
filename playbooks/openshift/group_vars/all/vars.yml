@@ -1,5 +1,7 @@
 ---
 
+htpasswd_file_path: "/etc/origin/master/htpasswd"
+
 required_packages:
 - "wget"
 - "git"
@@ -12,3 +14,4 @@ required_packages:
 - "kexec-tools"
 - "sos"
 - "psacct"
+- "NetworkManager"

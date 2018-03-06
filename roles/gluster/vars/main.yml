@@ -1,0 +1,5 @@
+---
+
+gluster_bricks:
+  - name: engine
+  - name: data

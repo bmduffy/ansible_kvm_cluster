@@ -6,9 +6,8 @@
   - "nfs_server"
 
 - name: "Configure nodes for OCP install"
-  hosts: nodes
-
-  pre_tasks:
+  hosts: all
+  tasks:
 
   - name: "Clear out old transactions"
     shell: "yum-complete-transaction --cleanup-only"
@@ -24,6 +23,14 @@
       name: "*"
       state: latest
 
+  - name: "Start NetworkManager"
+    systemd:
+      name: "NetworkManager"
+      state: started
+      enabled: yes
+
+- name: "Configure nodes for OCP install"
+  hosts: nodes
   roles:
   - {role: "nfs_client"}
   - {role: docker,

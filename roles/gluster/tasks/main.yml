@@ -1,0 +1,14 @@
+---
+# file: roles/gluster/tasks/main.yml
+
+- include: etc_hosts.yml
+  tags: [gluster, etc_hosts]
+
+- include: install.yml
+  tags: [gluster, install]
+
+- include: volumes.yml
+  tags: [gluster, volumes]
+
+- include: configure.yml
+  tags: [gluster, configure]

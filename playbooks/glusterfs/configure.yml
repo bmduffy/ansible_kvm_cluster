@@ -1,0 +1,19 @@
+---
+
+# Configure gluster to avoid split-brain. Each command needs only to be run
+# once on each of the nodes involved in the gluster
+
+- name: "Setup folders for bricks"
+  hosts: first_gluster_node
+  tasks:
+
+  - name: "set server quorum ratio for gluster cluster"
+    command: gluster volume set all cluster.server-quorum-ratio 51%
+
+  - name: "enable each volume to participate in the server side quorum"
+    shell: "gluster volume set {{ item }} cluster.server-quorum-type server"
+    with_items: "{{ gluster_bricks }}"
+
+  - name: "enable each volume to participate in the client side quorum, default 50%"
+    shell: "gluster volume set {{ item }} quorum-type auto"
+    with_items: "{{ gluster_bricks }}"

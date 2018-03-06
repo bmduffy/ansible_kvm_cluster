@@ -9,36 +9,45 @@ ansible_ssh_user: root
 # 8 to log body-level API debugging information
 debug_level: 8
 openshift_deployment_type: origin
-openshift_release: v3.7
+deployment_type: origin
+
+# Versions
+#openshift_image_tag=v3.7.0
+#openshift_pkg_version=-3.7.0
+openshift_release: v1.5
+
 containerized: false
 
+# skip these checks for local libvirt deploy, they won't pass because you can't
+# allocate the recommended system resources
 openshift_disable_check:
 - memory_availability
 - disk_availability
-
-#openshift_image_tag=v3.7.0
-#openshift_pkg_version=-3.7.0
 
 # This variable overrides the node selector that projects will
 # use by default when placing pods.
 osm_default_node_selector: "region=work"
 
-# This variable overrides the SDN cluster network CIDR block.
-# This is the network from which pod IPs are assigned.
-# This network block should be a private block and must not conflict with
-# existing network blocks in your infrastructure to which pods, nodes, or the
-# master may require access. Defaults to 10.128.0.0/14 and cannot be
-# arbitrarily re-configured after deployment, although certain changes to it
-# can be made in the SDN master configuration.
+# SDN cluster network CIDR block from which pod IPs are assigned
+# Must not conflict with existing network blocks in your infrastructure.
+# Defaults 10.128.0.0/14 cannot be arbitrarily re-configured after deployment
 osm_cluster_network_cidr: "10.128.0.0/14"
 openshift_use_dnsmasq: true
 
+# master api console and ports
+#openshift_master_api_port=443
+#openshift_master_console_port=8756
+
+# enable ntp on masters to ensure proper failover, probably needed for HA only?
+openshift_clock_enabled: true
+
+# add this file and some dummy users in post configuration step
 openshift_master_identity_providers:
-- name: 'htpasswd_auth'
+- name: "htpasswd_auth"
   login: true
   challenge: true
-  kind: 'HTPasswdPasswordIdentityProvider'
-  filename: '/etc/origin/master/htpasswd'
+  kind: "HTPasswdPasswordIdentityProvider"
+  filename: "/etc/origin/master/htpasswd"
 
 openshift_master_default_subdomain: "apps.test.origin.local"
 
@@ -50,16 +59,19 @@ openshift_node_kubelet_args:
   image-gc-high-threshold: ['10']
   image-gc-low-threshold: ['5']
 
-# master api console and ports
-#openshift_master_api_port=443
-#openshift_master_console_port=8756
-
-# enable ntp on masters to ensure proper failover
-openshift_clock_enabled: true
+# configure etcd to use NFS
+openshift_hosted_etcd_storage_kind: "nfs"
+openshift_hosted_etcd_storage_nfs_options: "*(rw,root_squash,sync,no_wdelay)"
+openshift_hosted_etcd_storage_nfs_directory: "/opt/osev3-etcd"
+openshift_hosted_etcd_storage_volume_name: "etcd-vol1"
+openshift_hosted_etcd_storage_access_modes: ["ReadWriteOnce"]
+openshift_hosted_etcd_storage_volume_size: "1G"
+openshift_hosted_etcd_storage_labels: { "storage": "etcd" }
 
 # openshift_docker_additional_registries=<registry_hostname>
 # openshift_docker_insecure_registries=<registry_hostname>
 # openshift_docker_blocked_registries=<registry_hostname>
 
+# Turn off logging and metrics for now
 openshift_metrics_install_metrics: false
 openshift_logging_install_logging: false
