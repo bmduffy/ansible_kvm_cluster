@@ -14,4 +14,3 @@ required_packages:
 - "kexec-tools"
 - "sos"
 - "psacct"
-- "NetworkManager"

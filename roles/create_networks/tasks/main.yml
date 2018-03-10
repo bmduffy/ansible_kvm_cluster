@@ -2,14 +2,9 @@
 
 # https://jamielinux.com/docs/libvirt-networking-handbook/index.html
 
-- name: "Check networks"
-  virt_net:
-    command: list_nets
-  register: output
-
-- name: "Get a list of networks"
+- name: "Get list of networks already provisioned"
   set_fact:
-    net_names: "{{ output.list_nets }}"
+    net_names: "{{ domain | list_networks_in_domain }}"
 
 - name: "Define the networks"
   virt_net:
@@ -23,7 +18,7 @@
 
 - name: "Get first network"
   set_fact:
-      network: "{{ networks[0] }}"
+    network: "{{ networks[0] }}"
 
 - name: "Start networks so it is activated"
   virt_net:
@@ -36,32 +31,3 @@
     name: "{{ item.name }}"
     autostart: yes
   with_items: "{{ networks }}"
-
-# This is apparently how to configure dnsmsq
-# https://liquidat.wordpress.com/2017/03/03/howto-automated-dns-resolution-for-kvmlibvirt-guests-with-a-local-domain/
-
-- name: "Configure NetworkManager to start its own dnsmsq"
-  template:
-    src: "localdns.conf.j2"
-    dest: "{{ local_dns_conf }}"
-  become: yes
-
-- name: "Create a libvirt dnsmaq.conf file"
-  file:
-    path: "{{ libvirt_dnsmasq }}"
-    state: touch
-  become: yes
-
-- name: "Add subnet to dnsmaq in NetworkManager"
-  lineinfile:
-    path: "{{ libvirt_dnsmasq }}"
-    regexp: "^server=/{{ domain }}/{{ networks[0].gateway }}"
-    line: "server=/{{ domain }}/{{ networks[0].gateway }}"
-    state: present
-  become: yes
-
-- name: "Restart NetworkManager"
-  systemd:
-    name: "NetworkManager"
-    state: reloaded
-  become: yes

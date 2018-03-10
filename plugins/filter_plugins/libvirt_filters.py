@@ -313,6 +313,7 @@ class VirtualMachineSnapshot(object):
 
     def process_xml_data(self):
         values = self.data.getElementsByTagName("name")
+        print values
         self.snapshot_name = values[0].firstChild.nodeValue
         self.virtual_machine_name = values[1].firstChild.nodeValue
 
@@ -492,7 +493,8 @@ def list_snapshots(hosts):
         data[x.virtual_machine_name].append(x.snapshot_name)
 
     return [{"virutal_machine_name": vm, "snapshot_name": snap}
-            for vm, snaps in data.iteritems() for snap in snaps]
+            for vm, snaps in data.iteritems()
+for snap in snaps]
 
 
 def list_vms_in_domain(domain):

@@ -1,0 +1,58 @@
+---
+
+# TODO:
+# 1. this should be a role
+# 2. need to add certs to the deployment
+
+- name: "Run a smoke test to check if there are any issues with deploy"
+  hosts: localhost
+  connection: local
+
+  vars:
+
+    oc_client     : "/usr/local/bin/oc"
+    test_host     : "master1.test.origin.local"
+    test_port     : 8443
+    test_prefix   : "smoke-test"
+    test_user     : "dopey"
+    test_pass : "passw0rd"
+    test_url      : "https://{{ test_host }}:{{ test_port }}"
+
+  tasks:
+
+  - name: "Check to see if the `oc` client is installed on the system"
+    shell: "oc version"
+    register: output
+    failed_when: output.rc not in (0, 127)
+
+  - debug:
+      msg: "{{ output.stdout_lines }}"
+
+  - name: "Get token to use to run `oc` commands"
+    shell: >
+      oc login -u {{ test_user }} -p {{ test_pass }} {{ test_url }} && \
+      oc whoami -t
+    register: output
+
+  - name: "Set `oc` token"
+    set_fact:
+      test_user_token: "{{ output.stdout_lines[-1] }}"
+
+  - name: "Currently using `{{ test_user }}` as test user"
+    debug:
+      msg: "{{ test_user }} : {{ test_user_token }}"
+
+  - name: "Create project/namespace '{{ test_prefix }}'"
+    oc:
+      state: present
+      host: "{{ test_host }}"
+      port: "{{ test_port }}"
+      inline:
+        kind: ProjectRequest
+        metadata:
+          name: "{{ test_prefix }}-project"
+        displayName: "Ansible Test Project"
+        description: "This project was created using Ansible"
+      token: "{{ test_user_token }}"
+      validate_certs: false
+  

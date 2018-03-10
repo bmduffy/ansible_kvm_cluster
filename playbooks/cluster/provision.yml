@@ -15,6 +15,14 @@
       name: "create_networks"
   - import_role:
       name: "create_instances"
+  - import_role:
+      name: "dnsmasq"
+    vars:
+      host_device: "em1"
+      nameservers:
+      - server: "{{ domain }}"
+        ipv4: "{{ networks[0].gateway }}"
+    become: yes
   - pause:
       seconds: 30
 

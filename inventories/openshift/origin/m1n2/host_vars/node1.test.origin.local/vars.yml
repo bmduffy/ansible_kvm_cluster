@@ -1,12 +1,12 @@
 ---
 
-cpus: 4
-memory: 4096
+cpus: 1
+memory: 1024
 
 boot_disk:
   format: "qcow2"
-  size: "40G"
+  size: "20G"
 
 other_disks:
   - format: "qcow2"
-    size: "40G"
+    size: "20G"

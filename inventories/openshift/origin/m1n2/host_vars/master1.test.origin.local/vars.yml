@@ -5,8 +5,8 @@ memory: 2048
 
 boot_disk:
   format: "qcow2"
-  size: "20G"
+  size: "40G"
 
 other_disks:
   - format: "qcow2"
-    size: "20G"
+    size: "40G"

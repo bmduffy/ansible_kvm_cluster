@@ -5,14 +5,9 @@
     path: "{{ create_instances_tmp_dir }}"
     state: directory
 
-- name: "Check instances from virsh"
-  virt:
-    command: list_vms
-  register: output
-
-- name: "Get a list of instances names"
+- name: "Get list of instances already provisioned"
   set_fact:
-    instance_list: "{{ output.list_vms }}"
+    instance_list: "{{ domain | list_vms_in_domain }}"
 
 - include_tasks: provision_instance.yml
   when: instance.name not in instance_list
