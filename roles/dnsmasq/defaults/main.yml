@@ -1,3 +1,4 @@
 local_dns_conf: "/etc/NetworkManager/conf.d/localdns.conf"
 libvirt_dnsmasq: "/etc/NetworkManager/dnsmasq.d/libvirt_dnsmasq.conf"
+libvirt_dnsmasq_wildcards: "/etc/NetworkManager/dnsmasq.d/libvirt_dnsmasq_wildcards.conf"
 host_device: "em1"

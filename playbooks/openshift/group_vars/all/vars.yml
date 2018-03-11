@@ -5,6 +5,7 @@ htpasswd_file_path: "/etc/origin/master/htpasswd"
 required_packages:
 - "wget"
 - "git"
+- "vim"
 - "net-tools"
 - "bind-utils"
 - "iptables-services"

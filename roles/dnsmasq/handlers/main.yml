@@ -4,7 +4,7 @@
   systemd:
     name: "NetworkManager"
     state: started
-    enable: yes
+    enabled: yes
 
 - name: "reload NetworkManager"
   systemd:

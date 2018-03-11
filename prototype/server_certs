@@ -1,7 +1,0 @@
-oadm ca create-server-cert \
-    --signer-cert=/etc/origin/master/ca.crt \
-    --signer-key=/etc/origin/master/ca.key \
-    --signer-serial=/etc/origin/master/ca.serial.txt \
-    --hostnames='docker-registry-default.sta.ocp.cluster,docker-registry.default.svc.cluster.local,172.30.92.1' \
-    --cert=/etc/secrets/registry.crt \
-    --key=/etc/secrets/registry.key

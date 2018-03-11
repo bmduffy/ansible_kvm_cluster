@@ -11,7 +11,7 @@ new_nodes
 [nfs]
 nfs1.test.origin.local
 
-[host_dns_wildcard_target]
+[dns_wildcard_target]
 master1.test.origin.local
 
 [masters]
@@ -21,7 +21,6 @@ master1.test.origin.local
 master1.test.origin.local
 
 [lb]
-dns1.test.origin.local
 
 [nodes]
 master1.test.origin.local openshift_node_labels="{'region': 'infra', 'zone': 'local'}"

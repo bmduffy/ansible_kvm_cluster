@@ -221,6 +221,21 @@ class VirtualNetwork(object):
             self.domain, self.macaddress, self.cidr_block,
             self.netmask, self.gateway)
 
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "uuid": self.uuid,
+            "mode": self.mode,
+            "bridge": self.bridge,
+            "macaddress": self.macaddress,
+            "cidr_block": self.cidr_block,
+            "netmask": self.netmask,
+            "gateway": self.gateway,
+            "by_hostname": self.by_hostname,
+            "by_macaddress": self.by_macaddress,
+            "by_ipv4": self.by_ipv4,
+        }
+
     def get_ipv4s(self):
         return self.by_ipv4.keys()
 
@@ -337,6 +352,12 @@ def get_virtual_networks():
     return dict(zip(names, networks))
 
 
+def get_virtual_networks_by_domain(domain):
+    vnets = get_virtual_networks()
+    key_subset = [x for x in vnets.keys() if x.endswith(domain)]
+    return dict([(x, vnets[x]) for x in key_subset])
+
+
 def get_virtual_network(netname):
     return get_virtual_networks().get(netname)
 
@@ -394,6 +415,12 @@ def generate_random_macaddress():
 
 def get_network(cidr_block):
     return Subnet(cidr_block).to_dict()
+
+
+def get_configured_networks(domain):
+    networks = get_virtual_networks_by_domain(domain)
+    sorted_keys = sorted(networks.keys())
+    return [networks.get(key).to_dict() for key in sorted_keys]
 
 
 def get_networks(domain, cidr_blocks):
@@ -478,23 +505,19 @@ def get_instances(hostvars, domain, cidr_blocks):
 
 
 def list_snapshots(hosts):
-
     virt = libvirt.openReadOnly("qemu:///system")
     snapshots = [VirtualMachineSnapshot(snapshot)
                  for vm in virt.listAllDomains()
                  for snapshot in vm.listAllSnapshots()]
     virt.close()
-
     data = {}
-
     for x in snapshots:
         if x.virtual_machine_name not in data:
             data[x.virtual_machine_name] = []
         data[x.virtual_machine_name].append(x.snapshot_name)
-
     return [{"virutal_machine_name": vm, "snapshot_name": snap}
             for vm, snaps in data.iteritems()
-for snap in snaps]
+            for snap in snaps]
 
 
 def list_vms_in_domain(domain):
@@ -511,6 +534,7 @@ class FilterModule(object):
         return {
             'get_network'             : get_network,
             'get_networks'            : get_networks,
+            'get_configured_networks' : get_configured_networks,
             'get_instances'           : get_instances,
             'list_snapshots'          : list_snapshots,
             'list_networks_in_domain' : list_networks_in_domain,

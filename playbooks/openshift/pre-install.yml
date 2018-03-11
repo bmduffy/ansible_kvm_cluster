@@ -2,8 +2,11 @@
 
 - name: "Configure NFS servers"
   hosts: nfs
-  roles:
-  - "nfs_server"
+  tasks:
+  - name: "Install and configure as an NFS server"
+    import_role:
+      name: "nfs_server"
+
 
 - name: "Configure nodes for OCP install"
   hosts: all
@@ -18,42 +21,39 @@
       state: present
     with_items: "{{ required_packages }}"
 
+  - name: "Install NetworkManager"
+    yum:
+      name: "NetworkManager"
+      state: present
+    notify:
+      - "Start NetworkManager"
+    when: openshift_use_dnsmasq
+
   - name: "Ensure all packages are at their latest"
     yum:
       name: "*"
       state: latest
 
-  - name: "Start NetworkManager"
-    systemd:
-      name: "NetworkManager"
-      state: started
-      enabled: yes
+  handlers:
+    - name: "Start NetworkManager"
+      systemd:
+        name: "NetworkManager"
+        state: started
+        enabled: yes
 
 - name: "Configure nodes for OCP install"
   hosts: nodes
-  roles:
-  - {role: "nfs_client"}
-  - {role: docker,
-     storage: "production",
-     block_device: "vdb"}
-
-- name: "Ensure wild card DNS queries resolve to VIP or Master"
-  hosts: localhost
-  connection: local
-  vars:
-    target: "{{ host_dns_wildcard_target[0] }}"
   tasks:
-    - name: "Get wildcard target IP from local environment"
-      shell: >
-        dig @127.0.0.1 {{ target }} +short
-    - name: "Set the wildcard IP"
-      set_fact:
-        wildcard_ip: "{{ output.stdout }}"
-    - import_role:
-        name: "dnsmasq"
-      vars:
-        host_device: "em1"
-        wildcards:
-          - subdomain: "{{ openshift_master_default_subdomain }}"
-            ipv4: "{{ wildcard_ip }}"
-      become: yes
+
+  - name: "Install and configure as an NFS client"
+    import_role:
+      name: "nfs_client"
+
+  - name: "Install and configure Docker"
+    import_role:
+      name: "docker"
+    vars:
+     storage: "production"
+     block_device: "vdb"
+
+- import_playbook: "./configure/dnsmasq.yml"

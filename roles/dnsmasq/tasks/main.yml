@@ -18,8 +18,11 @@
 
 - name: "Create a libvirt dnsmaq.conf file"
   file:
-    path: "{{ libvirt_dnsmasq }}"
+    path: "{{ item }}"
     state: touch
+  with_items:
+    - "{{ libvirt_dnsmasq }}"
+    - "{{ libvirt_dnsmasq_wildcards }}"
 
 - name: "Add nameservers to dnsmaq in NetworkManager"
   lineinfile:
@@ -34,9 +37,9 @@
 
 - name: "Add wildcards to dnsmaq in NetworkManager"
   lineinfile:
-    path: "{{ libvirt_dnsmasq }}"
-    regexp: "^address=/{{ item.subdomain }}/{{ item.ipv4 }}"
-    line: "address=/{{ item.subdomain }}/{{ item.ipv4 }}"
+    path: "{{ libvirt_dnsmasq_wildcards }}"
+    regexp: "^server=/.{{ item.subdomain }}/{{ item.ipv4 }}"
+    line: "server=/.{{ item.subdomain }}/{{ item.ipv4 }}"
     state: present
   when: wildcards is defined
   with_items: "{{ wildcards }}"
