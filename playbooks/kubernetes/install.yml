@@ -176,17 +176,27 @@
     - 30000-32767/tcp
     - 6783/tcp
 
-  - name: "Retrieve the join token from the first master"
-    slurp:
-      src: "/root/join_me.txt"
-    delegate_to: "{{ groups.masters.0 }}"
-    register: output
+  - name: "Check if `{{ inventory_hostname }}` is configured"
+    stat:
+      path: "/etc/kubernetes/kubelet.conf"
+    register: kubelet
 
-  - name: "Set token"
-    set_fact:
-      join: "{{ output['content'] | b64decode }}"
+  - name: "Add `{{ inventory_hostname }}` to the cluster"
+    block:
 
-  - name: "Join this worker to the cluster"
-    shell: "{{ join }}"
-    register: output
-    failed_when: success not in output.std
+    - name: "Retrieve the join token from the first master"
+      slurp:
+        src: "/root/join_me.txt"
+      delegate_to: "{{ groups.masters.0 }}"
+      register: output
+
+    - name: "Set token"
+      set_fact:
+        join: "{{ output['content'] | b64decode }}"
+
+    - name: "Join this worker to the cluster"
+      shell: "{{ join }}"
+      register: output
+      failed_when: success not in output.stdout
+
+    when: not kubelet.stat.exists
