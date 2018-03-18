@@ -1,0 +1,16 @@
+# Toy Kubernetes (k8s) cluster on KVM
+# https://www.linuxtechi.com/install-kubernetes-1-7-centos7-rhel7/
+
+[nfs]
+nfs1.test.k8s.local
+
+[nodes:children]
+masters
+workers
+
+[masters]
+master1.test.k8s.local
+
+[workers]
+worker1.test.k8s.local
+worker2.test.k8s.local

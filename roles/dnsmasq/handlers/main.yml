@@ -1,0 +1,12 @@
+---
+
+- name: "start NetworkManager"
+  systemd:
+    name: "NetworkManager"
+    state: started
+    enabled: yes
+
+- name: "reload NetworkManager"
+  systemd:
+    name: "NetworkManager"
+    state: reloaded

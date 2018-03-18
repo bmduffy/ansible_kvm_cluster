@@ -1,0 +1,32 @@
+
+[OSEv3:children]
+masters
+nodes
+etcd
+nfs
+lb
+new_masters
+new_nodes
+
+[nfs]
+nfs1.test.origin.local
+
+[dns_wildcard_target]
+master1.test.origin.local
+
+[masters]
+master1.test.origin.local
+
+[etcd]
+master1.test.origin.local
+
+[lb]
+
+[nodes]
+master1.test.origin.local openshift_node_labels="{'region': 'infra', 'zone': 'local'}" openshift_schedulable=true
+node1.test.origin.local   openshift_node_labels="{'region': 'work', 'zone': 'local'}"  openshift_schedulable=true
+node2.test.origin.local   openshift_node_labels="{'region': 'work', 'zone': 'local'}"  openshift_schedulable=true
+
+[new_nodes]
+
+[new_masters]

@@ -1,0 +1,11 @@
+---
+
+useful_packages:
+- "wget"
+- "git"
+- "vim"
+- "net-tools"
+- "bind-utils"
+- "iptables-services"
+- "bridge-utils"
+- "bash-completion"

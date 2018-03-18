@@ -10,7 +10,8 @@
   - set_fact:
       networks:  "{{ domain | list_networks_in_domain }}"
       instances: "{{ domain | list_vms_in_domain }}"
-
+  - debug:
+      msg: "{{ instances }}"
   - name: "Shutdown all VMs"
     virt:
       name: "{{ item }}"

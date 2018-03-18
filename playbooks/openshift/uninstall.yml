@@ -1,0 +1,3 @@
+---
+
+- import_playbook: "../../openshift-ansible/playbooks/adhoc/uninstall.yml"

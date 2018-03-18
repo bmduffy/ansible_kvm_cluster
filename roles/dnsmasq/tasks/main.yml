@@ -1,0 +1,47 @@
+---
+
+# https://liquidat.wordpress.com/2017/03/03/howto-automated-dns-resolution-for-kvmlibvirt-guests-with-a-local-domain/
+
+- name: "Ensure NetworkManager is installed"
+  yum:
+    name: "NetworkManager"
+    state: present
+  notify:
+    - start NetworkManager
+
+- name: "Configure NetworkManager to start its own dnsmsq"
+  template:
+    src: "localdns.conf.j2"
+    dest: "{{ local_dns_conf }}"
+  notify:
+    - reload NetworkManager
+
+- name: "Create a libvirt dnsmaq.conf file"
+  file:
+    path: "{{ item }}"
+    state: touch
+  with_items:
+    - "{{ libvirt_dnsmasq }}"
+    - "{{ libvirt_dnsmasq_wildcards }}"
+
+- name: "Add nameservers to dnsmaq in NetworkManager"
+  lineinfile:
+    path: "{{ libvirt_dnsmasq }}"
+    regexp: "^server=/{{ item.server }}/{{ item.ipv4 }}"
+    line: "server=/{{ item.server }}/{{ item.ipv4 }}"
+    state: present
+  when: nameservers is defined
+  with_items: "{{ nameservers }}"
+  notify:
+    - reload NetworkManager
+
+- name: "Add wildcards to dnsmaq in NetworkManager"
+  lineinfile:
+    path: "{{ libvirt_dnsmasq_wildcards }}"
+    regexp: "^server=/.{{ item.subdomain }}/{{ item.ipv4 }}"
+    line: "server=/.{{ item.subdomain }}/{{ item.ipv4 }}"
+    state: present
+  when: wildcards is defined
+  with_items: "{{ wildcards }}"
+  notify:
+    - reload NetworkManager

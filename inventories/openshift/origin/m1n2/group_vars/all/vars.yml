@@ -1,0 +1,11 @@
+---
+
+domain: "test.origin.local"
+wildcard_subdomain: "apps.{{ domain }}"
+
+base_image: "CentOS-7-x86_64-GenericCloud.qcow2"
+os_variant: "centos7.0"
+
+cidr_blocks:
+  - name: "eth0"
+    cidr: "10.10.10.0/27"

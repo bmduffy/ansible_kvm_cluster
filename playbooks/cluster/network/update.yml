@@ -9,8 +9,8 @@
 
   - set_fact:
       configured_networks: "{{ domain | list_networks_in_domain }}"
-      networks:  "{{ domain | list_networks_in_domain }}"
-      instances: ""
+      networks:  "{{ domain   | get_networks(cidr_blocks) }}"
+      instances: "{{ hostvars | get_instances(domain, cidr_blocks) }}"
 
   - name: "Undefine/remove all networks from KVM"
     virt_net:
@@ -29,7 +29,7 @@
         {% if nic.ipv4 is defined %}
         virsh net-update {{ nic.network }} \
             add ip-dhcp-host \
-            '<host mac="{{ nic.mac }}" ip="{{ nic.ipv4 }}"/>' \
+            '<host mac="{{ nic.macaddress }}" ip="{{ nic.ipv4 }}"/>' \
             --live --config
         {% endif %}
       {% endfor %}

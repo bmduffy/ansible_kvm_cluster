@@ -1,0 +1,27 @@
+---
+
+- name: "Configure wildcard DNS on localhost"
+  hosts: localhost
+  connection: local
+  vars:
+    target: "{{ groups.dns_wildcard_target[0] }}"
+  tasks:
+
+  - set_fact:
+      configured_networks: "{{ domain | get_configured_networks }}"
+
+  - set_fact:
+      wildcard_ip:     "{{ configured_networks.0.by_hostname[target].ipv4 }}"
+      network_gateway: "{{ configured_networks.0.gateway }}"
+
+  - import_role:
+      name: "dnsmasq"
+    vars:
+      host_device: "em1"
+      nameservers:
+        - server: "{{ domain }}"
+          ipv4: "{{ network_gateway }}"
+      wildcards:
+      - subdomain: "{{ wildcard_subdomain }}"
+        ipv4: "{{ wildcard_ip }}"
+    become: yes

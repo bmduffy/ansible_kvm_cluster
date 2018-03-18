@@ -8,13 +8,31 @@
   environment:
     LIBGUESTFS_BACKEND: "direct"
   tasks:
+
   - set_fact:
       networks:  "{{ domain   | get_networks(cidr_blocks) }}"
       instances: "{{ hostvars | get_instances(domain, cidr_blocks) }}"
+
   - import_role:
       name: "create_networks"
+
   - import_role:
       name: "create_instances"
+
+  - set_fact:
+      configured_networks: "{{ domain | get_configured_networks }}"
+
+  - set_fact:
+      network_gateway: "{{ configured_networks.0.gateway }}"
+
+  - import_role:
+      name: "dnsmasq"
+    vars:
+      host_device: "em1"
+      nameservers:
+      - server: "{{ domain }}"
+        ipv4: "{{ network_gateway }}"
+    become: yes
   - pause:
       seconds: 30
 

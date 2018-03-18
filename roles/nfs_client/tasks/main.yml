@@ -22,3 +22,4 @@
   with_items: ["virt_use_nfs", "virt_sandbox_use_nfs"]
   loop_control:
     loop_var: selopt
+  when: selinux_enabled

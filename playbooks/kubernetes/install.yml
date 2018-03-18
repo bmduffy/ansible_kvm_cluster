@@ -1,0 +1,202 @@
+---
+
+- name: "Configure NFS servers"
+  hosts: nfs
+  tasks:
+  - name: "Install and configure as an NFS server"
+    import_role:
+      name: "nfs_server"
+
+- name: "Configuration for all nodes"
+  hosts: nodes
+
+  handlers:
+
+  - name: "start firewalld"
+    service:
+      name: "firewalld"
+      enabled: yes
+      state: started
+
+  - name: "start kubelet"
+    service:
+      name: "kubelet"
+      enabled: yes
+      state: started
+
+  tasks:
+
+  - name: "Turn off yum caching on nodes"
+    lineinfile:
+      path: "/etc/yum.conf"
+      regexp: "^http_caching="
+      line: "http_caching=none"
+
+  - name: "Remove any old transactions"
+    shell: "yum-complete-transaction --cleanup-only"
+
+  - name: "Install useful packages"
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items: "{{ useful_packages }}"
+
+  - name: "Ensure netfilters directory exists"
+    shell: "modprobe br_netfilter"
+
+  - name: "bridge nf call iptables file"
+    copy:
+      src: "./files/bridge-nf-call-iptables"
+      dest: "/proc/sys/net/bridge/bridge-nf-call-iptables"
+
+  - name: "Install firewalld"
+    yum:
+      name: "firewalld"
+      state: present
+    notify: "start firewalld"
+
+  - name: "Ensure kubernetes repo is enabled"
+    copy:
+      src: "./files/kubernetes.repo"
+      dest: "/etc/yum.repos.d/kubernetes.repo"
+
+  - name: "Install and configure as an NFS client"
+    import_role:
+      name: "nfs_client"
+    vars:
+      selinux_enabled: false
+
+  - name: "Install and configure Docker"
+    import_role:
+      name: "docker"
+    vars:
+     storage: "production"
+     block_device: "vdb"
+
+  - name: "Install kubeadmin"
+    yum:
+      name: "kubeadm"
+      state: "present"
+    notify: "start kubelet"
+
+
+- name: "Initalize kubernetes master nodes"
+  hosts: masters
+  vars:
+    success: "Your Kubernetes master has initialized successfully!"
+  tasks:
+
+  - name: "Configure firewall rules"
+    firewalld:
+      port: "{{ item }}"
+      permanent: true
+      state: enabled
+    with_items:
+    - 6443/tcp
+    - 2379-2380/tcp
+    - 8080/tcp
+    - 10250-10252/tcp
+    - 10255/tcp
+
+  - name: "Check if kubernetes admin file exists"
+    stat:
+      path: "/etc/kubernetes/admin.conf"
+    register: admin
+
+  - name: "Initialize as a master"
+    block:
+
+    - name: "Run kube initialization"
+      shell: "kubeadm init"
+      register: output
+      failed_when: success not in output.stdout
+
+    - name: "Store the cluster join token for later"
+      shell : "echo {{ output.stdout_lines[-1] }} > /root/join_me.txt"
+
+    when: not admin.stat.exists
+
+  - name: "Configure `root` as kube user"
+    block:
+
+    - name: "Create `/root/.kube`"
+      file:
+        path: "/root/.kube"
+        state: directory
+
+    - name: "Copy `admin.conf`"
+      file:
+        src: "/etc/kubernetes/admin.conf"
+        dest: "/root/.kube/config"
+        owner: root
+        group: root
+        state: hard
+
+  # https://kubernetes.io/docs/admin/addons
+  - name: "Deploy pod network to the cluster"
+    block:
+
+    - name: "Get the version we need for the SDN net"
+      shell: "kubectl version | base64 | tr -d '\n'"
+      register: output
+
+    - name: "Set the SDN version fact"
+      set_fact:
+        version: "{{ output.stdout }}"
+
+    - name: "Wait for the kubernetes admin port on `{{ inventory_hostname }}`"
+      wait_for:
+        host: "{{ inventory_hostname }}"
+        port: 6443
+        timeout: 30
+
+    - name: "Deploy the SDN"
+      shell: >
+        kubectl apply -f \
+         "https://cloud.weave.works/k8s/net?k8s-version={{ version }}"
+
+    - name: "Wait for the SDN to come up"
+      pause:
+        seconds: 20
+
+- name: "Join worker nodes to the cluster"
+  hosts: workers
+  vars:
+    success: "Node join complete"
+  tasks:
+
+  - name: "Configure firewall rules"
+    firewalld:
+      port: "{{ item }}"
+      permanent: true
+      state: enabled
+    with_items:
+    - 10250/tcp
+    - 10255/tcp
+    - 30000-32767/tcp
+    - 6783/tcp
+
+  - name: "Check if `{{ inventory_hostname }}` is configured"
+    stat:
+      path: "/etc/kubernetes/kubelet.conf"
+    register: kubelet
+
+  - name: "Add `{{ inventory_hostname }}` to the cluster"
+    block:
+
+    - name: "Retrieve the join token from the first master"
+      slurp:
+        src: "/root/join_me.txt"
+      delegate_to: "{{ groups.masters.0 }}"
+      register: output
+
+    - name: "Set token"
+      set_fact:
+        join: "{{ output['content'] | b64decode }}"
+
+    - name: "Join this worker to the cluster"
+      shell: "{{ join }}"
+      register: output
+      failed_when: success not in output.stdout
+
+    when: not kubelet.stat.exists
