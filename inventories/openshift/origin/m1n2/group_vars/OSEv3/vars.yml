@@ -1,4 +1,5 @@
-# https://docs.openshift.org/latest/install_config/install/advanced_install.html
+# https://access.redhat.com/containers
+# https://github.com/openshift/openshift-ansible/tree/master/inventory
 
 ansible_ssh_user: root
 
@@ -9,20 +10,27 @@ ansible_ssh_user: root
 # 8 to log body-level API debugging information
 debug_level: 8
 openshift_deployment_type: origin
-deployment_type: origin
 
 # Versions
-openshift_release     : "v3.7.0"
-openshift_image_tag   : "v3.7.0"
-openshift_pkg_version : "-3.7.0"
+openshift_release               : "v3.6"
+openshift_upgrade_target        : "v3.6"
+openshift_image_tag             : "v3.6.173.0.96"
+openshift_pkg_version           : "-3.6.173.0.96"
+openshift_metrics_image_version : "v3.6"
+openshift_logging_image_version : "v3.6"
 
-containerized: true
+containerized: false
+system_images_registry: "docker.io"
+
+osm_use_cockpit: false
+openshift_cockpit_deployer_prefix: "registry.access.redhat.com/openshift3/"
 
 # skip these checks for local libvirt deploy, they won't pass because you can't
 # allocate the recommended system resources
 openshift_disable_check:
 - memory_availability
 - disk_availability
+- docker_image_availability
 
 # This variable overrides the node selector that projects will
 # use by default when placing pods.
@@ -32,7 +40,13 @@ osm_default_node_selector: "region=infra"
 # Must not conflict with existing network blocks in your infrastructure.
 # Defaults 10.128.0.0/14 cannot be arbitrarily re-configured after deployment
 osm_cluster_network_cidr: "10.128.0.0/14"
+openshift_use_openshift_sdn: true
+os_sdn_network_plugin_name: "redhat/openshift-ovs-subnet"
 openshift_use_dnsmasq: true
+openshift_ca_host: "master1.test.origin.local"
+
+openshift_router_selector:   'region=infra'
+openshift_registry_selector: 'region=infra'
 
 # master api console and ports
 #openshift_master_api_port=443
@@ -59,26 +73,32 @@ openshift_node_kubelet_args:
   image-gc-high-threshold: ['10']
   image-gc-low-threshold: ['5']
 
-# configure etcd to use NFS
-# openshift_hosted_etcd_storage_kind: "nfs"
-# openshift_hosted_etcd_storage_nfs_options: "*(rw,root_squash,sync,no_wdelay)"
-# openshift_hosted_etcd_storage_nfs_directory: "/opt/osev3-etcd"
-# openshift_hosted_etcd_storage_volume_name: "etcd-vol1"
-# openshift_hosted_etcd_storage_access_modes: ["ReadWriteOnce"]
-# openshift_hosted_etcd_storage_volume_size: "1G"
-# openshift_hosted_etcd_storage_labels: { "storage": "etcd" }
+osm_etcd_image: "rhel7/etcd"
 
-# registry: "registry.access.redhat.com"
-# oreg_url: "{{ registry }}/openshift3/ose-${component}:${version}"
-# openshift_examples_modify_imagestreams: true
-# openshift_docker_additional_registries: "{{ registry }}"
-# openshift_docker_insecure_registries=<registry_hostname>
-# openshift_docker_blocked_registries=<registry_hostname>
+oreg_url: "registry.access.redhat.com/openshift3/ose-${component}:${version}"
+openshift_examples_modify_imagestreams: true
+openshift_docker_additional_registries:
+- "registry.access.redhat.com"
+- "docker.io"
+openshift_docker_insecure_registries:
+- "registry.access.redhat.com"
+- "docker.io"
+- "172.30.0.0/16"
+openshift_docker_blocked_registries: []
+
+openshift_hosted_manage_registry: true
+openshift_hosted_registry_selector: "region=infra"
+openshift_hosted_registry_replicas: 1
+openshift_hosted_registry_cert_expire_days: 730
+openshift_hosted_registry_storage_kind: "nfs"
+openshift_hosted_registry_storage_access_modes: ['ReadWriteMany']
+openshift_hosted_registry_storage_nfs_directory: "/exports"
+openshift_hosted_registry_storage_nfs_options: "*(rw,root_squash)"
+openshift_hosted_registry_storage_volume_name: "registry"
+openshift_hosted_registry_storage_volume_size: "10Gi"
 
 openshift_enable_service_catalog: false
 
 # Turn off logging and metrics for now
-openshift_hosted_metrics_deploy   : true
-openshift_logging_metrics_deploy  : true
 openshift_metrics_install_metrics : false
 openshift_logging_install_logging : false

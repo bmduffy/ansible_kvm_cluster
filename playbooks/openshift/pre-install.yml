@@ -12,9 +12,6 @@
   hosts: all
   tasks:
 
-  - name: "Clear out old transactions"
-    shell: "yum-complete-transaction --cleanup-only"
-
   - name: "Install base packages on cluster nodes"
     yum:
       name: "{{ item }}"

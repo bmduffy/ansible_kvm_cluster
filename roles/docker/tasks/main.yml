@@ -15,9 +15,4 @@
 # configure docker storage
 - import_tasks: docker_storage_setup.yml
   when: storage == "production"
-
-- name: "Restart docker service and ensure it is enabled"
-  systemd:
-    name: docker
-    state: restarted
-    enabled: yes
+  notify: start docker

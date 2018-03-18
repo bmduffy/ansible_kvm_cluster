@@ -23,9 +23,9 @@ master1.test.origin.local
 [lb]
 
 [nodes]
-master1.test.origin.local openshift_node_labels="{'region': 'infra', 'zone': 'local'}"
-node1.test.origin.local   openshift_node_labels="{'region': 'work', 'zone': 'local'}"
-node2.test.origin.local   openshift_node_labels="{'region': 'work', 'zone': 'local'}"
+master1.test.origin.local openshift_node_labels="{'region': 'infra', 'zone': 'local'}" openshift_schedulable=true
+node1.test.origin.local   openshift_node_labels="{'region': 'work', 'zone': 'local'}"  openshift_schedulable=true
+node2.test.origin.local   openshift_node_labels="{'region': 'work', 'zone': 'local'}"  openshift_schedulable=true
 
 [new_nodes]
 

@@ -1,0 +1,8 @@
+---
+
+cpus: 1
+memory: 1024
+
+boot_disk:
+  format: "qcow2"
+  size: "100G"
