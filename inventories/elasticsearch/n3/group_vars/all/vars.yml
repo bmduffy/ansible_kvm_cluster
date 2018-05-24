@@ -1,0 +1,22 @@
+---
+
+domain: "test.elastic.local"
+
+base_image: "CentOS-7-x86_64-GenericCloud.qcow2"
+os_variant: "centos7.0"
+
+cidr_blocks:
+  - name: "eth0"
+    cidr: "200.0.0.0/27"
+
+es_cluster_name: "es_cluster_1"
+
+useful_packages:
+- "wget"
+- "git"
+- "vim"
+- "net-tools"
+- "bind-utils"
+- "iptables-services"
+- "bridge-utils"
+- "bash-completion"

@@ -12,16 +12,17 @@ debug_level: 8
 openshift_deployment_type: origin
 
 # Versions
-openshift_release               : "v3.6"
-openshift_upgrade_target        : "v3.6"
-openshift_image_tag             : "v3.6.173.0.96"
-openshift_pkg_version           : "-3.6.173.0.96"
-openshift_metrics_image_version : "v3.6"
-openshift_logging_image_version : "v3.6"
+openshift_release               : "v3.7"
+openshift_upgrade_target        : "v3.7"
+openshift_image_tag             : "v3.7.2"
+openshift_pkg_version           : "-3.7.1"
+#openshift_metrics_image_version : "v3.7"
+#openshift_logging_image_version : "v3.7"
 
-containerized: false
-system_images_registry: "docker.io"
+containerized: true
+system_images_registry: "registry.access.redhat.com"
 
+osm_etcd_image: "registry.access.redhat.com/rhel7/etcd"
 osm_use_cockpit: false
 openshift_cockpit_deployer_prefix: "registry.access.redhat.com/openshift3/"
 
@@ -73,15 +74,15 @@ openshift_node_kubelet_args:
   image-gc-high-threshold: ['10']
   image-gc-low-threshold: ['5']
 
-osm_etcd_image: "rhel7/etcd"
-
 oreg_url: "registry.access.redhat.com/openshift3/ose-${component}:${version}"
 openshift_examples_modify_imagestreams: true
 openshift_docker_additional_registries:
 - "registry.access.redhat.com"
+- "hub.docker.com"
 - "docker.io"
 openshift_docker_insecure_registries:
 - "registry.access.redhat.com"
+- "hub.docker.com"
 - "docker.io"
 - "172.30.0.0/16"
 openshift_docker_blocked_registries: []

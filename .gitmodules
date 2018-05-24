@@ -1,4 +1,9 @@
 [submodule "openshift-ansible"]
 	path = openshift-ansible
 	url = https://github.com/openshift/openshift-ansible.git
-	branch = release-3.7
+    branch = release-3.6
+
+[submodule "ansible-elasticsearch"]
+	path = ansible-elasticsearch
+	url = https://github.com/elastic/ansible-elasticsearch.git
+    branch = 6.2.2

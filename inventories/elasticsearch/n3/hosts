@@ -1,0 +1,10 @@
+[masters]
+es1.test.elastic.local
+es2.test.elastic.local
+es3.test.elastic.local
+
+[data]
+
+[nodes:children]
+masters
+data

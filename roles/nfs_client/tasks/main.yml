@@ -14,7 +14,14 @@
     name: nfs
     enabled: yes
 
-- name: "Default all container access for NFS"
+- name: "Get SE status"
+  shell: "sestatus"
+  register: status
+
+- set_fact:
+    selinux_enabled: "{{ 'disabled' not in status.stdout }}"
+
+- name: "Set SELinux booleans for NFS"
   seboolean:
     name: "{{ selopt }}"
     state: yes

@@ -1,0 +1,14 @@
+---
+
+- name: "Health Check"
+  hosts: masters
+  tasks:
+  - name: "Hit cluster health check API"
+    uri:
+      method: GET
+      url: "http://localhost:9200/_cat/health?v&pretty"
+      status_code: 200
+    register: health
+
+  - debug:
+      msg: "{{ health.stdout_lines }}"

@@ -33,7 +33,7 @@
       line: "http_caching=none"
 
   - name: "Remove any old transactions"
-    shell: "yum-complete-transaction --cleanup-only"
+    shell: "yum-complete-transaction --cleanup-only -y"
 
   - name: "Install useful packages"
     yum:
@@ -63,8 +63,6 @@
   - name: "Install and configure as an NFS client"
     import_role:
       name: "nfs_client"
-    vars:
-      selinux_enabled: false
 
   - name: "Install and configure Docker"
     import_role:
@@ -105,25 +103,20 @@
 
   - name: "Initialize as a master"
     block:
-
     - name: "Run kube initialization"
       shell: "kubeadm init"
       register: output
       failed_when: success not in output.stdout
-
     - name: "Store the cluster join token for later"
       shell : "echo {{ output.stdout_lines[-1] }} > /root/join_me.txt"
-
     when: not admin.stat.exists
 
   - name: "Configure `root` as kube user"
     block:
-
     - name: "Create `/root/.kube`"
       file:
         path: "/root/.kube"
         state: directory
-
     - name: "Copy `admin.conf`"
       file:
         src: "/etc/kubernetes/admin.conf"
@@ -131,38 +124,36 @@
         owner: root
         group: root
         state: hard
+        force: yes
 
   # https://kubernetes.io/docs/admin/addons
-  - name: "Deploy pod network to the cluster"
-    block:
+  - name: "Get the version we need for the SDN net"
+    shell: "kubectl version | base64 | tr -d '\n'"
+    register: output
 
-    - name: "Get the version we need for the SDN net"
-      shell: "kubectl version | base64 | tr -d '\n'"
-      register: output
+  - name: "Set the SDN version fact"
+    set_fact:
+      version: "{{ output.stdout }}"
 
-    - name: "Set the SDN version fact"
-      set_fact:
-        version: "{{ output.stdout }}"
+  - name: "Wait for the kubernetes admin port on `{{ inventory_hostname }}`"
+    wait_for:
+      host: "{{ inventory_hostname }}"
+      port: 6443
+      timeout: 30
 
-    - name: "Wait for the kubernetes admin port on `{{ inventory_hostname }}`"
-      wait_for:
-        host: "{{ inventory_hostname }}"
-        port: 6443
-        timeout: 30
+  - name: "Deploy the SDN"
+    shell: >
+      kubectl apply -f \
+       "https://cloud.weave.works/k8s/net?k8s-version={{ version }}"
 
-    - name: "Deploy the SDN"
-      shell: >
-        kubectl apply -f \
-         "https://cloud.weave.works/k8s/net?k8s-version={{ version }}"
-
-    - name: "Wait for the SDN to come up"
-      pause:
-        seconds: 20
+  - name: "Wait for the SDN to come up"
+    pause:
+      seconds: 20
 
 - name: "Join worker nodes to the cluster"
   hosts: workers
   vars:
-    success: "Node join complete"
+    success: "This node has joined the cluster"
   tasks:
 
   - name: "Configure firewall rules"
@@ -183,20 +174,16 @@
 
   - name: "Add `{{ inventory_hostname }}` to the cluster"
     block:
-
     - name: "Retrieve the join token from the first master"
       slurp:
         src: "/root/join_me.txt"
       delegate_to: "{{ groups.masters.0 }}"
       register: output
-
     - name: "Set token"
       set_fact:
         join: "{{ output['content'] | b64decode }}"
-
     - name: "Join this worker to the cluster"
       shell: "{{ join }}"
       register: output
       failed_when: success not in output.stdout
-
     when: not kubelet.stat.exists
