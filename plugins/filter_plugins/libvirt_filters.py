@@ -19,7 +19,9 @@ def getElement(dom, tag):
 
 
 def getAttribute(dom, tag, attr):
-    return dom.getElementsByTagName(tag)[0].getAttribute(attr)
+    elements = dom.getElementsByTagName(tag)
+    if elements:
+      return elements[0].getAttribute(attr)
 
 
 def bits(ip):
@@ -79,7 +81,9 @@ def to_string(int_array):
 
 
 def increment_ipv4(str_ipv4):
+
     int_array = to_int_array(str_ipv4)
+
     if int_array[3] < 255:
         int_array[3] += 1
     else:
@@ -94,6 +98,7 @@ def increment_ipv4(str_ipv4):
                 int_array[1] = 0
                 if int_array[0] < 255:
                     int_array[0] += 1
+
     return to_string(int_array)
 
 
@@ -159,8 +164,10 @@ class VirtualNetwork(object):
         dhcp = self.data.getElementsByTagName('dhcp')[0]
 
         for host in dhcp.getElementsByTagName('host'):
+
             macaddress = host.getAttribute('mac')
             ipv4 = host.getAttribute('ip')
+
             self.by_macaddress[macaddress] = {
                 'ipv4': ipv4,
                 'hostname': ipv4_to_hostname.get(ipv4)

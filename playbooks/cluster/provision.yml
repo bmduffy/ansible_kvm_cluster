@@ -1,38 +1,35 @@
 ---
 
-- name: "Provision Cluster"
+- name: "Provision Cluster Instances"
   become: no
   hosts: localhost
   connection: local
   gather_facts: false
   environment:
     LIBGUESTFS_BACKEND: "direct"
-  tasks:
+  vars:
+    networks:  "{{ domain   | get_networks(cidr_blocks) }}"
+    instances: "{{ hostvars | get_instances(domain, cidr_blocks) }}"
+  roles:
+  - role: "create_networks"
+  - role: "create_instances"
 
-  - set_fact:
-      networks:  "{{ domain   | get_networks(cidr_blocks) }}"
-      instances: "{{ hostvars | get_instances(domain, cidr_blocks) }}"
-
-  - import_role:
-      name: "create_networks"
-
-  - import_role:
-      name: "create_instances"
-
-  - set_fact:
-      configured_networks: "{{ domain | get_configured_networks }}"
-
-  - set_fact:
-      network_gateway: "{{ configured_networks.0.gateway }}"
-
-  - import_role:
-      name: "dnsmasq"
+- name: "Provision Cluster Instances"
+  become: no
+  hosts: localhost
+  connection: local
+  vars:
+    configured_networks: "{{ domain | get_configured_networks }}"
+    network_gateway: "{{ configured_networks.0.gateway }}"
+  roles:
+  - role: "dnsmasq"
     vars:
       host_device: "em1"
       nameservers:
       - server: "{{ domain }}"
         ipv4: "{{ network_gateway }}"
     become: yes
+  tasks:
   - pause:
       seconds: 30
 
